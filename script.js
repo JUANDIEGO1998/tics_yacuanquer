@@ -1502,39 +1502,85 @@ function renderResult(){
 
 
           const p =
-            s.total
-              ? Math.round(
-                  s.correct /
-                  s.total *
-                  100
-                )
-              : 0;
+  s.total
+    ? Math.round(
+        s.correct /
+        s.total *
+        100
+      )
+    : 0;
+
+const wrong =
+  s.total - s.correct;
 
 
-          return `
+return `
 
-            <div class="bar-row">
+  <div
+    class="bar-row"
+    style="
+      margin-bottom:22px;
+      padding:14px;
+      background:#f8fafc;
+      border-radius:12px;
+    ">
 
-              <b>
-                ${c}
-              </b>
+    <div
+      style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:12px;
+        margin-bottom:8px;
+      ">
 
-              <div class="bar">
+      <b>
+        ${c}
+      </b>
 
-                <div
-                  class="fill"
-                  style="width:${p}%">
-                </div>
+      <span style="font-weight:700;">
+        ${p}%
+      </span>
 
-              </div>
+    </div>
 
-              <span>
-                ${p}%
-              </span>
+    <div class="bar">
 
-            </div>
+      <div
+        class="fill"
+        style="width:${p}%">
+      </div>
 
-          `;
+    </div>
+
+    <div
+      style="
+        display:flex;
+        gap:18px;
+        flex-wrap:wrap;
+        margin-top:10px;
+        font-size:14px;
+      ">
+
+      <span>
+        ✅ <b>${s.correct}</b>
+        ${s.correct === 1
+          ? "respuesta buena"
+          : "respuestas buenas"}
+      </span>
+
+      <span>
+        ❌ <b>${wrong}</b>
+        ${wrong === 1
+          ? "respuesta mala"
+          : "respuestas malas"}
+      </span>
+
+    </div>
+
+  </div>
+
+`;
 
         }
       )
