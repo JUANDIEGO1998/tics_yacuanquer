@@ -1,63 +1,349 @@
-const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyswqq64yFBf_fDqzoAtK_atng9w4AM0UtWS2sCvyNFV074zmyp2DW6eYcObBLbkLB8/exec";
-
+// ⚠️ IMPORTANTE: Reemplaza esta URL con la que obtengas de Google Apps Script
+// ✅ CORREGIDO: Usa la URL completa que obtengas al publicar
+const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycby1xqhahb1psBuzRKx0dTQaV4WaE3lr6jUlyHVK2w0EN1c6l1DGWgyBZqYBF_A0gX0m/exec";
 
 /* =====================================================
    PREGUNTAS DEL RETO
    ===================================================== */
 
 const questions = [
-  ["🔐 Seguridad digital", "¿Cuál de estas contraseñas ofrece mejores condiciones de seguridad?", ["Yacuanquer2026", "123456789", "Alcaldia123", "M#r7!pQ2@xL9"], 3, "Una contraseña segura debe ser difícil de adivinar y combinar diferentes tipos de caracteres."],
 
-  ["🔐 Seguridad digital", "Recibes un correo que dice: “URGENTE: Su cuenta institucional será suspendida hoy. Haga clic aquí para confirmar sus datos”. ¿Qué deberías hacer?", ["Hacer clic rápidamente.", "Introducir la contraseña y luego cambiarla.", "Verificar el remitente, no abrir el enlace y reportar el mensaje.", "Reenviarlo a compañeros para preguntarles."], 2, "Los mensajes que generan urgencia y solicitan credenciales mediante enlaces pueden ser intentos de phishing."],
+  // =====================================================
+  // 🔐 SEGURIDAD DIGITAL
+  // =====================================================
 
-  ["🔐 Seguridad digital", "¿Qué beneficio proporciona principalmente la autenticación de dos factores?", ["Hace que el computador funcione más rápido.", "Añade una segunda capa de seguridad para acceder a una cuenta.", "Elimina la necesidad de tener contraseña.", "Permite compartir la contraseña."], 1, "La autenticación de dos factores añade una segunda verificación además de la contraseña."],
+  [
+    "🔐 Seguridad digital",
+    "Un funcionario necesita crear una contraseña para acceder a una plataforma institucional. ¿Cuál de las siguientes opciones sería la más recomendable?",
+    [
+      "Yacuanquer2026",
+      "Alcaldia#2026",
+      "Yacuanquer123!",
+      "M#r7!pQ2@xL9"
+    ],
+    3,
+    "Una contraseña segura debe ser difícil de adivinar, tener suficiente longitud y combinar diferentes tipos de caracteres."
+  ],
 
-  ["🔐 Seguridad digital", "Terminas tu jornada y tu computador institucional queda encendido con tu correo abierto. ¿Qué deberías hacer?", ["Dejarlo así.", "Bloquear o cerrar la sesión antes de retirarte.", "Compartir la contraseña.", "Dejar una nota indicando que el correo está abierto."], 1, "Bloquear o cerrar la sesión evita accesos no autorizados a información y sistemas."],
+  [
+    "🔐 Seguridad digital",
+    "Recibes un correo aparentemente enviado por una entidad conocida. El mensaje indica que tu cuenta será bloqueada en pocas horas y contiene un enlace para actualizar la contraseña. ¿Qué sería lo más adecuado?",
+    [
+      "Ingresar al enlace para evitar que bloqueen la cuenta.",
+      "Verificar la solicitud mediante un canal oficial antes de ingresar cualquier dato.",
+      "Responder el correo preguntando si realmente fue enviado por la entidad.",
+      "Reenviar el mensaje a otros funcionarios para saber qué hicieron ellos."
+    ],
+    1,
+    "Los mensajes que generan urgencia pueden utilizarse para engañar al usuario. Lo recomendable es verificar la solicitud por un canal oficial y no utilizar directamente el enlace recibido."
+  ],
 
+  [
+    "🔐 Seguridad digital",
+    "Un funcionario tiene una contraseña segura para su correo institucional y la entidad activa una segunda verificación mediante un código enviado a su teléfono. ¿Qué beneficio se obtiene principalmente?",
+    [
+      "La contraseña deja de ser necesaria.",
+      "El correo puede ser utilizado por varias personas.",
+      "Se agrega una segunda capa de verificación para reducir el riesgo de accesos no autorizados.",
+      "El sistema guarda automáticamente todas las contraseñas."
+    ],
+    2,
+    "La autenticación de dos factores agrega una segunda verificación además de la contraseña, dificultando el acceso incluso si la contraseña llegara a ser comprometida."
+  ],
 
-  ["📧 Comunicación digital", "Vas a enviar un documento institucional a varias personas. ¿Qué deberías hacer antes de enviar el mensaje?", ["Enviarlo inmediatamente.", "Revisar destinatarios, asunto y archivos adjuntos.", "Enviarlo primero y corregir después.", "Utilizar siempre “Responder a todos”."], 1, "Una revisión previa ayuda a evitar filtraciones, destinatarios incorrectos y adjuntos equivocados."],
+  [
+    "🔐 Seguridad digital",
+    "Terminas tu jornada y debes retirarte unos minutos de un computador institucional que tiene abierto el correo y otros sistemas. ¿Cuál sería la mejor decisión?",
+    [
+      "Bloquear la sesión antes de retirarte.",
+      "Dejar el equipo abierto porque regresarás pronto.",
+      "Cerrar únicamente el correo y dejar los demás sistemas abiertos.",
+      "Pedirle a otro compañero que vigile el computador."
+    ],
+    0,
+    "Bloquear la sesión evita que otra persona pueda acceder a información o sistemas mientras el equipo se encuentra desatendido."
+  ],
 
-  ["📧 Comunicación digital", "Recibes de un remitente desconocido un archivo llamado “Documento_Importante.exe”. ¿Qué haces?", ["Lo abres.", "Lo descargas y lo envías a un compañero.", "No lo abres y reportas el correo como sospechoso.", "Lo guardas en Drive."], 2, "Los archivos ejecutables de fuentes desconocidas pueden contener software malicioso."],
+  // =====================================================
+  // 📧 COMUNICACIÓN DIGITAL
+  // =====================================================
 
-  ["📧 Comunicación digital", "¿Cuál es una buena práctica al enviar un correo institucional?", ["Poner solo “URGENTE”.", "No colocar asunto.", "Usar un asunto claro y explicar brevemente el propósito.", "Escribir todo en mayúsculas."], 2, "Un asunto claro facilita identificar, organizar y buscar la información."],
+  [
+    "📧 Comunicación digital",
+    "Vas a enviar un documento institucional a varias personas y el archivo contiene información que no todos necesitan conocer. ¿Qué deberías revisar antes de enviarlo?",
+    [
+      "Que el mensaje tenga muchas personas como destinatarios.",
+      "Que el correo se envíe rápidamente.",
+      "Que el asunto diga únicamente 'URGENTE'.",
+      "Que los destinatarios, el archivo adjunto y los permisos de acceso sean los adecuados."
+    ],
+    3,
+    "Antes de enviar información institucional es importante verificar destinatarios, archivos adjuntos y que la información llegue solamente a quienes realmente la necesitan."
+  ],
 
-  ["📧 Comunicación digital", "Recibes un correo dirigido a varias personas, pero tu respuesta solo interesa al remitente. ¿Qué opción es más adecuada?", ["Responder a todos.", "Responder únicamente al remitente.", "Reenviarlo a toda la entidad.", "Crear un correo sin contexto."], 1, "Usar correctamente “Responder” o “Responder a todos” evita compartir información innecesariamente."],
+  [
+    "📧 Comunicación digital",
+    "Recibes de un remitente desconocido un archivo llamado 'Documento_Importante.exe'. El mensaje parece relacionado con una actividad laboral. ¿Qué haces?",
+    [
+      "Abrirlo para comprobar qué contiene.",
+      "Descargarlo y enviarlo a un compañero para que lo revise.",
+      "No abrirlo y reportar el mensaje como sospechoso.",
+      "Guardarlo en Drive para revisarlo después."
+    ],
+    2,
+    "Los archivos ejecutables provenientes de fuentes desconocidas pueden contener software malicioso. Lo recomendable es no abrirlos y reportarlos."
+  ],
 
+  [
+    "📧 Comunicación digital",
+    "Necesitas enviar un correo a otra dependencia para solicitar información sobre un proceso. ¿Cuál de estas opciones representa una comunicación más adecuada?",
+    [
+      "Utilizar un asunto claro y explicar brevemente qué información se solicita y para qué se necesita.",
+      "Enviar únicamente la palabra 'URGENTE'.",
+      "No colocar asunto para que el destinatario lea directamente el contenido.",
+      "Escribir todo el mensaje en mayúsculas para llamar la atención."
+    ],
+    0,
+    "Un asunto claro y un mensaje concreto facilitan la comprensión, organización y seguimiento de las comunicaciones institucionales."
+  ],
 
-  ["📂 Gestión de información", "Necesitas compartir un documento institucional con un compañero para que pueda editarlo. ¿Cuál es una buena práctica?", ["Usar un enlace público.", "Configurar el acceso solo para quienes necesitan trabajar con él.", "Publicarlo en redes sociales.", "Usar una cuenta personal sin autorización."], 1, "Los documentos institucionales deben compartirse con permisos adecuados."],
+  [
+    "📧 Comunicación digital",
+    "Recibes un correo dirigido a varias personas, pero la respuesta que necesitas enviar solamente interesa al remitente. ¿Qué opción es más adecuada?",
+    [
+      "Responder a todos para asegurarte de que nadie quede por fuera.",
+      "Reenviar el correo a toda la dependencia.",
+      "Responder únicamente al remitente.",
+      "Crear un nuevo correo sin explicar el contexto."
+    ],
+    2,
+    "Responder únicamente al remitente cuando los demás destinatarios no necesitan la información evita compartir mensajes innecesariamente."
+  ],
 
-  ["📂 Gestión de información", "¿Cuál estructura facilita más la organización de documentos?", ["documento1, documento2, documento3", "VARIOS, NUEVO, FINAL", "Carpetas organizadas por proceso, año y tipo de documento.", "Guardar todo en el escritorio."], 2, "Una estructura organizada facilita encontrar, compartir y conservar información."],
+  // =====================================================
+  // 📂 GESTIÓN DE INFORMACIÓN
+  // =====================================================
 
-  ["📂 Gestión de información", "Un documento importante se pierde por una falla del computador. ¿Qué práctica habría reducido este riesgo?", ["Guardar únicamente en el escritorio.", "Crear copias de seguridad periódicas en medios autorizados.", "Cambiar el nombre del archivo.", "Imprimirlo y eliminar el archivo digital."], 1, "Las copias de seguridad permiten recuperar información ante fallas o incidentes."],
+  [
+    "📂 Gestión de información",
+    "Necesitas compartir un documento institucional con un compañero para que pueda editarlo. El archivo contiene información de trabajo que no debe quedar disponible públicamente. ¿Qué opción sería más adecuada?",
+    [
+      "Publicar el enlace para que cualquier persona pueda acceder.",
+      "Configurar el acceso únicamente para las personas que necesitan trabajar con el documento.",
+      "Enviar el documento a una cuenta personal.",
+      "Publicarlo temporalmente y eliminarlo después."
+    ],
+    1,
+    "Los documentos institucionales deben compartirse mediante permisos adecuados y únicamente con las personas que necesitan acceder a ellos."
+  ],
 
-  ["📂 Gestión de información", "Debes enviar información con datos personales de ciudadanos. ¿Cuál es la mejor práctica?", ["Enviar a cualquier correo.", "Publicar en WhatsApp.", "Usar canales autorizados y limitar el acceso a quienes necesitan la información.", "Subirla a una plataforma pública."], 2, "La información personal debe manejarse responsablemente y con acceso limitado."],
+  [
+    "📂 Gestión de información",
+    "Una dependencia tiene documentos de diferentes años y procesos almacenados en varias carpetas sin ningún orden. ¿Cuál organización facilitaría más su consulta?",
+    [
+      "Guardar todos los archivos directamente en el escritorio.",
+      "Utilizar nombres como 'NUEVO', 'FINAL' y 'FINAL2'.",
+      "Organizar las carpetas de acuerdo con proceso, año y tipo de documento.",
+      "Crear una sola carpeta llamada 'Documentos importantes'."
+    ],
+    2,
+    "Una estructura organizada por proceso, año y tipo de documento facilita encontrar, consultar y conservar la información."
+  ],
 
+  [
+    "📂 Gestión de información",
+    "Un funcionario guarda durante varios días un documento importante únicamente en el computador. El equipo presenta una falla y el archivo no puede recuperarse. ¿Qué medida habría ayudado a reducir este riesgo?",
+    [
+      "Realizar copias de seguridad periódicas en medios autorizados.",
+      "Cambiar el nombre del archivo cada día.",
+      "Guardar el archivo en diferentes carpetas del mismo computador.",
+      "Imprimir el documento después de cada modificación."
+    ],
+    0,
+    "Las copias de seguridad permiten recuperar información ante fallas del equipo, pérdida de archivos o incidentes tecnológicos."
+  ],
 
-  ["🤖 Inteligencia artificial", "¿Cuál es un uso apropiado de una herramienta de inteligencia artificial?", ["Compartir bases de datos con información personal.", "Solicitar ideas para estructurar una presentación.", "Entregar contraseñas institucionales.", "Introducir información confidencial sin autorización."], 1, "La IA puede apoyar ideas y tareas, pero no se debe introducir información personal o confidencial sin autorización."],
+  [
+    "📂 Gestión de información",
+    "Debes enviar información que contiene datos personales de ciudadanos a otra dependencia. ¿Cuál debería ser tu primera consideración?",
+    [
+      "Enviar la información desde cualquier correo para hacerlo más rápido.",
+      "Publicarla en un grupo de WhatsApp de funcionarios.",
+      "Enviar toda la información sin revisar quién la recibirá.",
+      "Verificar que exista autorización, utilizar un canal institucional y limitar el acceso a quienes necesitan los datos."
+    ],
+    3,
+    "La información personal debe manejarse de forma responsable, utilizando canales autorizados y limitando el acceso a las personas que realmente necesitan conocerla."
+  ],
 
-  ["🤖 Inteligencia artificial", "Una IA te proporciona una respuesta que parece correcta. ¿Qué debes hacer antes de usarla en un documento oficial?", ["Copiarla inmediatamente.", "Confiar porque es IA.", "Revisar y verificar la información con fuentes confiables.", "Compartirla sin revisarla."], 2, "La IA puede generar información incorrecta o desactualizada; siempre debe verificarse."],
+  // =====================================================
+  // 🤖 INTELIGENCIA ARTIFICIAL
+  // =====================================================
 
-  ["🤖 Inteligencia artificial", "Necesitas ayuda para redactar un documento que contiene nombres, identificaciones y datos personales. ¿Qué haces?", ["Copiar toda la información en la IA.", "Eliminar o anonimizar los datos sensibles y trabajar con información no identificable.", "Tomar una foto y subirla.", "Compartir el documento completo."], 1, "Se debe proteger la información personal y confidencial; es preferible trabajar con ejemplos ficticios o datos anonimizados."],
+  [
+    "🤖 Inteligencia artificial",
+    "Un funcionario necesita preparar una presentación sobre seguridad digital y quiere utilizar una herramienta de inteligencia artificial para obtener algunas ideas. ¿Cuál sería un uso apropiado?",
+    [
+      "Compartir una base de datos de ciudadanos para que la IA prepare la presentación.",
+      "Entregar las contraseñas institucionales para personalizar las recomendaciones.",
+      "Solicitar ideas y una estructura general para la presentación sin incluir información confidencial.",
+      "Copiar documentos internos completos en la herramienta."
+    ],
+    2,
+    "La IA puede utilizarse como apoyo para generar ideas y estructurar contenidos, siempre evitando introducir información personal, confidencial o restringida sin autorización."
+  ],
 
-  ["🤖 Inteligencia artificial", "¿Cuál instrucción probablemente generará una respuesta más útil de una IA?", ["Hazme un documento.", "Escribe algo sobre tecnología.", "Redacta una introducción de 150 palabras sobre seguridad digital para funcionarios públicos, con lenguaje claro y profesional.", "Necesito ayuda."], 2, "Un buen prompt define objetivo, contexto, extensión y características del resultado."],
+  [
+    "🤖 Inteligencia artificial",
+    "Una herramienta de IA genera una respuesta que parece correcta y el funcionario quiere incluirla en un documento oficial. ¿Qué debería hacer antes?",
+    [
+      "Revisar y verificar la información utilizando fuentes confiables.",
+      "Copiarla directamente porque la herramienta utiliza inteligencia artificial.",
+      "Preguntar a la IA si la respuesta es verdadera y utilizarla sin más revisión.",
+      "Compartir el resultado con otros funcionarios para que decidan si es correcto."
+    ],
+    0,
+    "Las herramientas de IA pueden generar información incorrecta, incompleta o desactualizada. Por eso sus resultados deben revisarse y verificarse antes de utilizarlos."
+  ],
 
+  [
+    "🤖 Inteligencia artificial",
+    "Necesitas ayuda para redactar un documento que contiene nombres, números de identificación y otros datos personales. ¿Cuál sería la alternativa más segura?",
+    [
+      "Copiar todo el documento en la herramienta de IA.",
+      "Tomar fotografías de los documentos y subirlas.",
+      "Compartir el archivo completo para obtener una respuesta más precisa.",
+      "Eliminar o anonimizar los datos personales y trabajar con información que no permita identificar a las personas."
+    ],
+    3,
+    "Cuando se utilicen herramientas de IA se debe proteger la información personal y confidencial. Trabajar con datos ficticios o anonimizados reduce este riesgo."
+  ],
 
-  ["💻 Herramientas digitales", "Tienes 200 registros y necesitas encontrar rápidamente los de una dependencia determinada. ¿Qué herramienta puede ayudarte?", ["Filtro de datos.", "Cambiar el fondo de pantalla.", "Imprimir todo.", "Reiniciar el computador."], 0, "Los filtros permiten localizar información específica dentro de grandes cantidades de datos."],
+  [
+    "🤖 Inteligencia artificial",
+    "Un funcionario necesita pedirle a una IA que redacte una introducción para una capacitación. ¿Cuál de estas instrucciones probablemente producirá un resultado más útil?",
+    [
+      "Escribe algo sobre tecnología.",
+      "Redacta una introducción de 150 palabras sobre seguridad digital dirigida a funcionarios públicos, utilizando un lenguaje claro y profesional.",
+      "Hazme una introducción.",
+      "Necesito un texto para una capacitación."
+    ],
+    1,
+    "Una instrucción clara proporciona contexto, objetivo, extensión y características del resultado esperado, lo que facilita obtener una respuesta más útil."
+  ],
 
-  ["💻 Herramientas digitales", "Tres funcionarios necesitan trabajar simultáneamente en un mismo documento. ¿Qué opción es más eficiente cuando la herramienta institucional lo permite?", ["Enviar diferentes copias por correo.", "Trabajar sobre un documento compartido con permisos adecuados.", "Imprimirlo y repartirlo.", "Cada uno crea un documento diferente."], 1, "El trabajo colaborativo permite trabajar sobre una misma versión y reduce duplicados."],
+  // =====================================================
+  // 💻 HERRAMIENTAS DIGITALES
+  // =====================================================
 
-  ["💻 Herramientas digitales", "Antes de participar en una reunión virtual de trabajo, ¿qué es recomendable?", ["Conectarse sin revisar nada.", "Verificar conexión, audio, cámara y material necesario.", "Compartir públicamente el enlace.", "Conectarse desde cualquier dispositivo sin verificar seguridad."], 1, "Una revisión previa reduce problemas técnicos y mejora la participación."],
+  [
+    "💻 Herramientas digitales",
+    "Tienes una hoja de cálculo con aproximadamente 200 registros y necesitas localizar rápidamente los correspondientes a una dependencia específica. ¿Qué función sería más útil?",
+    [
+      "Aplicar un filtro de datos.",
+      "Cambiar el fondo de pantalla del computador.",
+      "Imprimir todos los registros y revisarlos manualmente.",
+      "Reiniciar el computador."
+    ],
+    0,
+    "Los filtros permiten mostrar únicamente los registros que cumplen determinados criterios y facilitan la consulta de grandes cantidades de información."
+  ],
 
-  ["💻 Herramientas digitales", "Necesitas convertir un documento en papel a un archivo digital. ¿Qué herramienta puede ser útil?", ["Un escáner o aplicación autorizada de digitalización.", "Una calculadora.", "Un reproductor de música.", "El administrador de tareas."], 0, "La digitalización convierte documentos físicos en archivos electrónicos para su gestión."],
+  [
+    "💻 Herramientas digitales",
+    "Tres funcionarios necesitan trabajar al mismo tiempo en un documento y quieren evitar tener varias versiones diferentes del mismo archivo. ¿Cuál sería la opción más conveniente cuando la herramienta institucional lo permite?",
+    [
+      "Enviar una copia diferente por correo a cada funcionario.",
+      "Trabajar sobre un documento compartido con permisos adecuados.",
+      "Imprimir el documento y repartir las hojas.",
+      "Cada funcionario debe crear su propia versión y unirlas al final."
+    ],
+    1,
+    "El trabajo colaborativo sobre un documento compartido permite trabajar sobre una misma versión y reduce la duplicación de archivos."
+  ],
 
+  [
+    "💻 Herramientas digitales",
+    "Antes de participar en una reunión virtual de trabajo en la que debes presentar información, ¿qué sería recomendable hacer?",
+    [
+      "Conectarte directamente cuando empiece la reunión.",
+      "Compartir públicamente el enlace por si alguien necesita ingresar.",
+      "Verificar previamente conexión, audio, cámara y los documentos que vas a utilizar.",
+      "Conectarte desde cualquier dispositivo sin revisar sus condiciones de seguridad."
+    ],
+    2,
+    "Una revisión previa de los aspectos técnicos y del material de trabajo reduce inconvenientes durante la reunión y permite participar de manera adecuada."
+  ],
 
-  ["🌎 Ciudadanía digital", "Un compañero te solicita por WhatsApp una base de datos con información personal de ciudadanos. ¿Qué deberías hacer?", ["Enviarla porque es compañero.", "Verificar si está autorizado y usar el canal institucional correspondiente.", "Publicarla en un grupo.", "Enviarla desde tu correo personal."], 1, "El acceso a información personal debe estar autorizado y utilizar canales institucionales."],
+  [
+    "💻 Herramientas digitales",
+    "Una dependencia conserva varios documentos únicamente en papel y necesita consultarlos con mayor facilidad desde los equipos institucionales. ¿Qué opción puede ayudar?",
+    [
+      "Digitalizarlos mediante un escáner o una aplicación autorizada.",
+      "Tomarles fotografías y publicarlas en redes sociales.",
+      "Cambiarles el nombre antes de archivarlos.",
+      "Imprimirlos nuevamente en un tamaño diferente."
+    ],
+    0,
+    "La digitalización permite convertir documentos físicos en archivos electrónicos que pueden organizarse y consultarse mediante los sistemas autorizados."
+  ],
 
-  ["🌎 Ciudadanía digital", "¿Cuál es una buena práctica al utilizar redes sociales desde un dispositivo institucional?", ["Publicar fotografías de documentos internos.", "Compartir información confidencial.", "Evitar publicar información institucional sensible o que comprometa a la entidad.", "Publicar capturas de sistemas internos."], 2, "La información institucional debe manejarse responsablemente también en redes sociales."],
+  // =====================================================
+  // 🌎 CIUDADANÍA DIGITAL
+  // =====================================================
 
-  ["🌎 Ciudadanía digital", "Estás utilizando un computador compartido y debes retirarte unos minutos. ¿Qué debes hacer?", ["Dejar sistemas abiertos.", "Bloquear la sesión.", "Escribir tu contraseña en una nota.", "Pedir a alguien que vigile el equipo."], 1, "Bloquear la sesión evita que otra persona acceda a sistemas o información."],
+  [
+    "🌎 Ciudadanía digital",
+    "Un compañero te solicita por WhatsApp una base de datos que contiene información personal de ciudadanos porque dice que la necesita para realizar una tarea. ¿Qué deberías hacer?",
+    [
+      "Enviarla porque es un compañero de trabajo.",
+      "Mandarla desde tu correo personal para evitar problemas con el correo institucional.",
+      "Publicarla en un grupo para que todos puedan consultarla.",
+      "Verificar que esté autorizado para recibirla y utilizar el canal institucional correspondiente."
+    ],
+    3,
+    "El hecho de que una persona sea compañero de trabajo no significa que tenga autorización para acceder a información personal. Se deben verificar los permisos y utilizar los canales institucionales."
+  ],
 
-  ["🌎 Ciudadanía digital", "Haces clic accidentalmente en un enlace sospechoso usando tu equipo institucional. ¿Qué deberías hacer?", ["Ocultarlo.", "Continuar normalmente.", "Informar inmediatamente al área o responsable correspondiente.", "Eliminar todos los archivos."], 2, "Reportar rápidamente permite evaluar el riesgo y tomar medidas oportunas."]
+  [
+    "🌎 Ciudadanía digital",
+    "Un funcionario utiliza ocasionalmente un computador institucional para consultar redes sociales. ¿Cuál de estas prácticas representa un mayor cuidado frente a la información de la entidad?",
+    [
+      "Publicar fotografías de documentos internos si no muestran nombres.",
+      "Evitar publicar información institucional sensible, capturas de sistemas o documentos internos.",
+      "Compartir capturas de pantalla de los sistemas para mostrar el trabajo realizado.",
+      "Publicar información interna siempre que la cuenta sea privada."
+    ],
+    1,
+    "La información institucional puede ser sensible incluso cuando no contiene nombres. Se debe evitar publicar documentos, capturas o información que pueda comprometer a la entidad."
+  ],
+
+  [
+    "🌎 Ciudadanía digital",
+    "Estás utilizando un computador compartido y debes alejarte durante unos minutos para atender otra actividad. El equipo tiene una sesión institucional abierta. ¿Qué deberías hacer?",
+    [
+      "Bloquear la sesión antes de retirarte.",
+      "Dejar la sesión abierta porque solo estarás unos minutos.",
+      "Escribir la contraseña cerca del computador para facilitar el acceso al regresar.",
+      "Pedirle a un compañero que continúe utilizando el equipo."
+    ],
+    0,
+    "Bloquear la sesión protege la información y evita que otra persona pueda utilizar los sistemas mientras el equipo se encuentra desatendido."
+  ],
+
+  [
+    "🌎 Ciudadanía digital",
+    "Haces clic accidentalmente en un enlace sospechoso desde tu equipo institucional. Después de abrirlo no notas ningún cambio en el computador. ¿Cuál sería la acción más adecuada?",
+    [
+      "No hacer nada porque aparentemente no ocurrió nada.",
+      "Eliminar inmediatamente todos los archivos del computador.",
+      "Informar oportunamente al responsable o área correspondiente para que pueda evaluar el posible riesgo.",
+      "Continuar trabajando y solamente reportarlo si el equipo presenta problemas."
+    ],
+    2,
+    "Aunque no se observe un problema inmediatamente, un enlace sospechoso podría representar un riesgo. Reportarlo oportunamente permite evaluar la situación y tomar medidas preventivas."
+  ]
+
 ];
 
 
@@ -72,7 +358,11 @@ let state = {
   answers: [],
   categoryScores: {},
   survey: {},
-  competenciasVistas: []
+  competenciasVistas: [],
+
+  cronometroInicio: null,
+  cronometroIntervalo: null,
+  tiempoTotalSegundos: 0
 };
 
 
@@ -93,10 +383,90 @@ const categories = [
 
 
 /* =====================================================
+   FUNCIONES DEL CRONÓMETRO
+   ===================================================== */
+
+function iniciarCronometro() {
+
+  if (state.cronometroIntervalo) {
+    clearInterval(state.cronometroIntervalo);
+  }
+
+  state.cronometroInicio = Date.now();
+  state.tiempoTotalSegundos = 0;
+
+  actualizarCronometro();
+
+  state.cronometroIntervalo = setInterval(
+    actualizarCronometro,
+    1000
+  );
+
+}
+
+
+function obtenerTiempoTranscurrido() {
+
+  if (!state.cronometroInicio) {
+    return 0;
+  }
+
+  return Math.floor(
+    (Date.now() - state.cronometroInicio) / 1000
+  );
+
+}
+
+
+function formatearTiempo(segundos) {
+
+  const minutos = Math.floor(segundos / 60);
+  const segundosRestantes = segundos % 60;
+
+  return (
+    String(minutos).padStart(2, "0") +
+    ":" +
+    String(segundosRestantes).padStart(2, "0")
+  );
+
+}
+
+
+function actualizarCronometro() {
+
+  const tiempo = obtenerTiempoTranscurrido();
+  const tiempoFormateado = formatearTiempo(tiempo);
+
+  const elemento = document.getElementById("cronometro");
+  if (elemento) {
+    elemento.textContent = "⏱️ " + tiempoFormateado;
+  }
+
+  const topElement = document.getElementById("cronometroTop");
+  if (topElement) {
+    topElement.textContent = "⏱️ " + tiempoFormateado;
+  }
+
+}
+
+
+function detenerCronometro() {
+
+  if (state.cronometroIntervalo) {
+    clearInterval(state.cronometroIntervalo);
+    state.cronometroIntervalo = null;
+  }
+
+  state.tiempoTotalSegundos = obtenerTiempoTranscurrido();
+
+}
+
+
+/* =====================================================
    PANTALLA DE BIENVENIDA
    ===================================================== */
 
-function renderWelcome(){
+function renderWelcome() {
 
   progressText.textContent = "";
 
@@ -163,7 +533,7 @@ function renderWelcome(){
    REGISTRO DEL PARTICIPANTE
    ===================================================== */
 
-function renderRegister(){
+function renderRegister() {
 
   progressText.textContent =
     "Registro del participante";
@@ -193,7 +563,7 @@ function renderRegister(){
 
           <input
             id="name"
-            placeholder="Ej. María Pérez">
+            placeholder="">
 
         </div>
 
@@ -205,7 +575,7 @@ function renderRegister(){
 
           <input
             id="dep"
-            placeholder="Ej. Secretaría de Gobierno">
+            placeholder="">
 
         </div>
 
@@ -217,7 +587,7 @@ function renderRegister(){
 
           <input
             id="role"
-            placeholder="Ej. Profesional / Técnico / Auxiliar">
+            placeholder="">
 
         </div>
 
@@ -251,7 +621,7 @@ function renderRegister(){
    INICIAR PROCESO
    ===================================================== */
 
-function startQuiz(){
+function startQuiz() {
 
   const name =
     document
@@ -271,12 +641,11 @@ function startQuiz(){
       .value
       .trim();
 
-
-  if(
+  if (
     !name ||
     !dep ||
     !role
-  ){
+  ) {
 
     return alert(
       "Por favor completa nombre, dependencia y cargo."
@@ -284,13 +653,11 @@ function startQuiz(){
 
   }
 
-
   state.user = {
     name: name,
     dep: dep,
     role: role
   };
-
 
   state.index = 0;
   state.score = 0;
@@ -299,6 +666,9 @@ function startQuiz(){
   state.survey = {};
   state.competenciasVistas = [];
 
+  state.cronometroInicio = null;
+  state.cronometroIntervalo = null;
+  state.tiempoTotalSegundos = 0;
 
   categories.forEach(
     c => {
@@ -311,7 +681,6 @@ function startQuiz(){
     }
   );
 
-
   renderIntroduction();
 
 }
@@ -321,11 +690,10 @@ function startQuiz(){
    INTRODUCCIÓN INTERACTIVA
    ===================================================== */
 
-function renderIntroduction(){
+function renderIntroduction() {
 
   progressText.textContent =
     "Preparación del reto";
-
 
   app.innerHTML = `
     <section class="card">
@@ -352,18 +720,15 @@ function renderIntroduction(){
 
       </div>
 
-
       <h3>
         👋 ¡Bienvenido al Reto Digital!
       </h3>
-
 
       <p>
         Antes de comenzar las preguntas, te invitamos
         a realizar un breve recorrido por las principales
         competencias digitales que hacen parte del reto.
       </p>
-
 
       <div class="notice">
 
@@ -377,14 +742,11 @@ function renderIntroduction(){
 
       </div>
 
-
       <h3>
         📚 Conoce las competencias
       </h3>
 
-
       <div class="grid">
-
 
         <div
           class="feature"
@@ -410,7 +772,6 @@ function renderIntroduction(){
 
         </div>
 
-
         <div
           class="feature"
           onclick="mostrarCompetencia('comunicacion')"
@@ -434,7 +795,6 @@ function renderIntroduction(){
           </small>
 
         </div>
-
 
         <div
           class="feature"
@@ -460,7 +820,6 @@ function renderIntroduction(){
 
         </div>
 
-
         <div
           class="feature"
           onclick="mostrarCompetencia('ia')"
@@ -485,7 +844,6 @@ function renderIntroduction(){
 
         </div>
 
-
         <div
           class="feature"
           onclick="mostrarCompetencia('herramientas')"
@@ -509,7 +867,6 @@ function renderIntroduction(){
           </small>
 
         </div>
-
 
         <div
           class="feature"
@@ -537,7 +894,6 @@ function renderIntroduction(){
 
       </div>
 
-
       <div
         id="competenciaInfo"
         style="
@@ -545,7 +901,6 @@ function renderIntroduction(){
           display:none;
         ">
       </div>
-
 
       <div
         id="progresoCompetencias"
@@ -563,7 +918,6 @@ function renderIntroduction(){
 
       </div>
 
-
       <div class="notice">
 
         🎯 <b>Recuerda:</b>
@@ -577,7 +931,6 @@ function renderIntroduction(){
         digitales.
 
       </div>
-
 
       <div class="actions">
 
@@ -607,13 +960,12 @@ function renderIntroduction(){
    INFORMACIÓN DE LAS COMPETENCIAS
    ===================================================== */
 
-function mostrarCompetencia(tipo){
+function mostrarCompetencia(tipo) {
 
   const info =
     document.getElementById(
       "competenciaInfo"
     );
-
 
   const contenidos = {
 
@@ -632,9 +984,7 @@ function mostrarCompetencia(tipo){
           información y posibles ataques.
         </p>
 
-        <h4>
-          🔑 Contraseñas
-        </h4>
+        <h4>🔑 Contraseñas</h4>
 
         <p>
           Utiliza contraseñas largas, difíciles de adivinar
@@ -642,18 +992,14 @@ function mostrarCompetencia(tipo){
           servicios.
         </p>
 
-        <h4>
-          🛡️ Autenticación
-        </h4>
+        <h4>🛡️ Autenticación</h4>
 
         <p>
           La autenticación de dos factores agrega una segunda
           capa de protección además de la contraseña.
         </p>
 
-        <h4>
-          📧 Phishing
-        </h4>
+        <h4>📧 Phishing</h4>
 
         <p>
           Desconfía de correos que generen urgencia,
@@ -661,9 +1007,7 @@ function mostrarCompetencia(tipo){
           abrir enlaces sospechosos.
         </p>
 
-        <h4>
-          🔒 Protección del equipo
-        </h4>
+        <h4>🔒 Protección del equipo</h4>
 
         <p>
           Cuando te alejes del computador institucional,
@@ -673,7 +1017,6 @@ function mostrarCompetencia(tipo){
       `
 
     },
-
 
     comunicacion: {
 
@@ -689,36 +1032,28 @@ function mostrarCompetencia(tipo){
           requiere responsabilidad y cuidado.
         </p>
 
-        <h4>
-          ✉️ Correos institucionales
-        </h4>
+        <h4>✉️ Correos institucionales</h4>
 
         <p>
           Antes de enviar un correo revisa cuidadosamente
           los destinatarios, el asunto y los archivos adjuntos.
         </p>
 
-        <h4>
-          📎 Archivos
-        </h4>
+        <h4>📎 Archivos</h4>
 
         <p>
           Evita abrir archivos ejecutables o documentos
           provenientes de remitentes desconocidos o sospechosos.
         </p>
 
-        <h4>
-          📝 Asunto y contenido
-        </h4>
+        <h4>📝 Asunto y contenido</h4>
 
         <p>
           Utiliza asuntos claros y explica brevemente
           el propósito del mensaje.
         </p>
 
-        <h4>
-          👥 Responder correctamente
-        </h4>
+        <h4>👥 Responder correctamente</h4>
 
         <p>
           Utiliza “Responder a todos” solamente cuando
@@ -729,7 +1064,6 @@ function mostrarCompetencia(tipo){
       `
 
     },
-
 
     informacion: {
 
@@ -745,9 +1079,7 @@ function mostrarCompetencia(tipo){
           adecuada.
         </p>
 
-        <h4>
-          📁 Organización
-        </h4>
+        <h4>📁 Organización</h4>
 
         <p>
           Mantén los documentos organizados en carpetas
@@ -755,9 +1087,7 @@ function mostrarCompetencia(tipo){
           proceso, año y tipo de documento.
         </p>
 
-        <h4>
-          ☁️ Compartir información
-        </h4>
+        <h4>☁️ Compartir información</h4>
 
         <p>
           Cuando compartas un documento utiliza permisos
@@ -765,9 +1095,7 @@ function mostrarCompetencia(tipo){
           realmente necesitan trabajar con él.
         </p>
 
-        <h4>
-          💾 Copias de seguridad
-        </h4>
+        <h4>💾 Copias de seguridad</h4>
 
         <p>
           Las copias de seguridad periódicas ayudan a recuperar
@@ -775,9 +1103,7 @@ function mostrarCompetencia(tipo){
           incidentes tecnológicos.
         </p>
 
-        <h4>
-          🔒 Datos personales
-        </h4>
+        <h4>🔒 Datos personales</h4>
 
         <p>
           La información personal debe manejarse con cuidado,
@@ -788,7 +1114,6 @@ function mostrarCompetencia(tipo){
       `
 
     },
-
 
     ia: {
 
@@ -805,9 +1130,7 @@ function mostrarCompetencia(tipo){
           facilitar algunas tareas.
         </p>
 
-        <h4>
-          💡 Utilízala como apoyo
-        </h4>
+        <h4>💡 Utilízala como apoyo</h4>
 
         <p>
           La IA puede ayudarte a generar ideas o mejorar
@@ -815,9 +1138,7 @@ function mostrarCompetencia(tipo){
           siempre debe estar a cargo de la persona.
         </p>
 
-        <h4>
-          🔎 Verifica la información
-        </h4>
+        <h4>🔎 Verifica la información</h4>
 
         <p>
           Una herramienta de IA puede generar información
@@ -825,9 +1146,7 @@ function mostrarCompetencia(tipo){
           y verificar sus respuestas antes de utilizarlas.
         </p>
 
-        <h4>
-          🔐 Protege la información
-        </h4>
+        <h4>🔐 Protege la información</h4>
 
         <p>
           No introduzcas contraseñas, datos personales o
@@ -835,9 +1154,7 @@ function mostrarCompetencia(tipo){
           de IA sin autorización.
         </p>
 
-        <h4>
-          ✍️ Da instrucciones claras
-        </h4>
+        <h4>✍️ Da instrucciones claras</h4>
 
         <p>
           Una instrucción clara, específica y con contexto
@@ -847,7 +1164,6 @@ function mostrarCompetencia(tipo){
       `
 
     },
-
 
     herramientas: {
 
@@ -863,9 +1179,7 @@ function mostrarCompetencia(tipo){
           rápida y eficiente.
         </p>
 
-        <h4>
-          🔎 Buscar información
-        </h4>
+        <h4>🔎 Buscar información</h4>
 
         <p>
           En hojas de cálculo y otras herramientas puedes
@@ -873,9 +1187,7 @@ function mostrarCompetencia(tipo){
           información específica.
         </p>
 
-        <h4>
-          👥 Trabajo colaborativo
-        </h4>
+        <h4>👥 Trabajo colaborativo</h4>
 
         <p>
           Cuando una herramienta lo permita, varias personas
@@ -883,18 +1195,14 @@ function mostrarCompetencia(tipo){
           utilizando los permisos adecuados.
         </p>
 
-        <h4>
-          🎥 Reuniones virtuales
-        </h4>
+        <h4>🎥 Reuniones virtuales</h4>
 
         <p>
           Antes de una reunión virtual verifica conexión,
           micrófono, cámara y los documentos que vas a necesitar.
         </p>
 
-        <h4>
-          📄 Digitalización
-        </h4>
+        <h4>📄 Digitalización</h4>
 
         <p>
           Los escáneres y aplicaciones autorizadas permiten
@@ -904,7 +1212,6 @@ function mostrarCompetencia(tipo){
       `
 
     },
-
 
     ciudadania: {
 
@@ -921,18 +1228,14 @@ function mostrarCompetencia(tipo){
           información institucional.
         </p>
 
-        <h4>
-          🔒 Información personal
-        </h4>
+        <h4>🔒 Información personal</h4>
 
         <p>
           No compartas bases de datos o información personal
           sin verificar que exista autorización para hacerlo.
         </p>
 
-        <h4>
-          📱 Redes sociales
-        </h4>
+        <h4>📱 Redes sociales</h4>
 
         <p>
           Evita publicar información institucional sensible,
@@ -940,9 +1243,7 @@ function mostrarCompetencia(tipo){
           puedan comprometer a la entidad.
         </p>
 
-        <h4>
-          🖥️ Equipos compartidos
-        </h4>
+        <h4>🖥️ Equipos compartidos</h4>
 
         <p>
           Si utilizas un computador compartido, bloquea
@@ -950,9 +1251,7 @@ function mostrarCompetencia(tipo){
           información.
         </p>
 
-        <h4>
-          ⚠️ Reportar incidentes
-        </h4>
+        <h4>⚠️ Reportar incidentes</h4>
 
         <p>
           Si haces clic accidentalmente en un enlace sospechoso
@@ -966,23 +1265,19 @@ function mostrarCompetencia(tipo){
 
   };
 
-
   const c =
     contenidos[tipo];
 
-
-  if(
+  if (
     !state.competenciasVistas.includes(tipo)
-  ){
+  ) {
 
     state.competenciasVistas.push(tipo);
 
   }
 
-
   info.style.display =
     "block";
-
 
   info.innerHTML = `
 
@@ -1003,11 +1298,9 @@ function mostrarCompetencia(tipo){
 
       </div>
 
-
       <h2>
         ${c.titulo}
       </h2>
-
 
       <div
         style="
@@ -1018,7 +1311,6 @@ function mostrarCompetencia(tipo){
         ${c.texto}
 
       </div>
-
 
       <div
         style="
@@ -1040,13 +1332,11 @@ function mostrarCompetencia(tipo){
 
   `;
 
-
   actualizarProgresoCompetencias();
 
-
   info.scrollIntoView({
-    behavior:"smooth",
-    block:"center"
+    behavior: "smooth",
+    block: "center"
   });
 
 }
@@ -1056,32 +1346,28 @@ function mostrarCompetencia(tipo){
    ACTUALIZAR PROGRESO DE COMPETENCIAS
    ===================================================== */
 
-function actualizarProgresoCompetencias(){
+function actualizarProgresoCompetencias() {
 
   const contador =
     state.competenciasVistas.length;
-
 
   const progreso =
     document.getElementById(
       "progresoCompetencias"
     );
 
-
   const boton =
     document.getElementById(
       "btnComenzarReto"
     );
 
-
-  if(!progreso || !boton){
+  if (!progreso || !boton) {
     return;
   }
 
-
-  if(
+  if (
     contador < 6
-  ){
+  ) {
 
     progreso.innerHTML = `
 
@@ -1096,21 +1382,12 @@ function actualizarProgresoCompetencias(){
 
     `;
 
-
     boton.disabled = true;
+    boton.style.opacity = "0.5";
+    boton.style.cursor = "not-allowed";
+    boton.innerHTML = "🔒 REVISA LAS 6 COMPETENCIAS";
 
-    boton.style.opacity =
-      "0.5";
-
-    boton.style.cursor =
-      "not-allowed";
-
-    boton.innerHTML =
-      "🔒 REVISA LAS 6 COMPETENCIAS";
-
-  }
-
-  else{
+  } else {
 
     progreso.innerHTML = `
 
@@ -1125,17 +1402,10 @@ function actualizarProgresoCompetencias(){
 
     `;
 
-
     boton.disabled = false;
-
-    boton.style.opacity =
-      "1";
-
-    boton.style.cursor =
-      "pointer";
-
-    boton.innerHTML =
-      "🚀 COMENZAR EL RETO";
+    boton.style.opacity = "1";
+    boton.style.cursor = "pointer";
+    boton.innerHTML = "🚀 COMENZAR EL RETO";
 
   }
 
@@ -1146,11 +1416,11 @@ function actualizarProgresoCompetencias(){
    COMENZAR LAS PREGUNTAS
    ===================================================== */
 
-function beginQuestions(){
+function beginQuestions() {
 
-  if(
+  if (
     state.competenciasVistas.length < 6
-  ){
+  ) {
 
     return alert(
       "Antes de comenzar debes revisar las 6 competencias digitales."
@@ -1158,8 +1428,9 @@ function beginQuestions(){
 
   }
 
-
   state.index = 0;
+
+  iniciarCronometro();
 
   renderQuestion();
 
@@ -1170,13 +1441,12 @@ function beginQuestions(){
    MOSTRAR PREGUNTA
    ===================================================== */
 
-function renderQuestion(){
+function renderQuestion() {
 
   const q =
     questions[
       state.index
     ];
-
 
   const pct =
     Math.round(
@@ -1186,27 +1456,97 @@ function renderQuestion(){
       ) * 100
     );
 
+  const respuestaAnterior =
+    state.answers[state.index] !== undefined;
 
   progressText.textContent =
     `Pregunta ${state.index + 1} de ${questions.length} · ${pct}%`;
 
+  const opcionesHTML =
+    q[2]
+      .map(
+        (o, i) => {
+
+          let clases = "option";
+
+          if (respuestaAnterior) {
+            if (i === q[3]) {
+              clases += " correct";
+            }
+            if (i === state.answers[state.index] && i !== q[3]) {
+              clases += " wrong";
+            }
+          }
+
+          const seleccionada =
+            respuestaAnterior &&
+            i === state.answers[state.index];
+
+          return `
+
+            <button
+              class="${clases}"
+              onclick="answer(${i})"
+              id="opt${i}"
+              ${respuestaAnterior ? 'disabled' : ''}
+              style="${seleccionada ? 'border-color:#2563eb;background:#eef6ff;' : ''}">
+
+              ${String.fromCharCode(65 + i)}.
+              ${o}
+
+              ${seleccionada ? ' ✅' : ''}
+
+            </button>
+
+          `;
+
+        }
+      )
+      .join("");
 
   app.innerHTML = `
 
     <section class="card">
 
-      <div class="question-top">
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:15px;
+          flex-wrap:wrap;
+          margin-bottom:15px;
+        ">
 
-        <span class="mission">
-          ${q[0]}
-        </span>
+        <div class="question-top">
 
-        <span>
-          💯 100 puntos
-        </span>
+          <span class="mission">
+            ${q[0]}
+          </span>
+
+          <span>
+            💯 100 puntos
+          </span>
+
+        </div>
+
+        <div
+          id="cronometro"
+          style="
+            font-size:18px;
+            font-weight:700;
+            padding:10px 16px;
+            border-radius:10px;
+            background:#eef6ff;
+            color:#1d4ed8;
+            white-space:nowrap;
+          ">
+
+          ⏱️ 00:00
+
+        </div>
 
       </div>
-
 
       <div class="bar">
 
@@ -1217,7 +1557,6 @@ function renderQuestion(){
 
       </div>
 
-
       <div class="qtext">
 
         ${state.index + 1}.
@@ -1225,56 +1564,179 @@ function renderQuestion(){
 
       </div>
 
-
       <div class="options">
 
+        ${opcionesHTML}
+
+      </div>
+
+      <div id="feedback">
         ${
-          q[2]
-            .map(
-              (o,i) => `
+          respuestaAnterior
+            ? `
+
+              <div class="feedback">
+
+                ${
+                  state.answers[state.index] === q[3]
+                    ? "✅ <b>¡Correcto! +100 puntos</b>"
+                    : "❌ <b>Respuesta incorrecta</b>"
+                }
+
+                <br>
+
+                ${q[4]}
+
+              </div>
+
+            `
+            : ""
+        }
+      </div>
+
+      <div class="actions" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+
+          <button
+            class="btn secondary"
+            onclick="volverACompetencias()"
+            style="background:#eef3fa;color:#26364f;">
+
+            📚 Competencias
+
+          </button>
+
+          ${
+            state.index > 0
+              ? `
+                <button
+                  class="btn secondary"
+                  onclick="preguntaAnterior()"
+                  style="background:#eef3fa;color:#26364f;">
+
+                  ⬅️ Anterior
+
+                </button>
+              `
+              : ""
+          }
+
+        </div>
+
+        <div>
+
+          ${
+            respuestaAnterior
+              ? `
 
                 <button
-                  class="option"
-                  onclick="answer(${i})"
-                  id="opt${i}">
+                  id="nextBtn"
+                  class="btn"
+                  onclick="nextQuestion()">
 
-                  ${String.fromCharCode(65+i)}.
-                  ${o}
+                  ${
+                    state.index ===
+                    questions.length - 1
+                      ? "Ver resultado 🏆"
+                      : "Siguiente →"
+                  }
 
                 </button>
 
               `
-            )
-            .join("")
-        }
+              : `
+                <button
+                  id="nextBtn"
+                  class="btn"
+                  disabled
+                  style="opacity:0.5;cursor:not-allowed;">
 
-      </div>
+                  ${
+                    state.index ===
+                    questions.length - 1
+                      ? "Ver resultado 🏆"
+                      : "Siguiente →"
+                  }
 
-
-      <div id="feedback"></div>
-
-
-      <div class="actions">
-
-        <button
-          id="nextBtn"
-          class="btn hidden"
-          onclick="nextQuestion()">
-
-          ${
-            state.index ===
-            questions.length - 1
-              ? "Ver resultado"
-              : "Siguiente →"
+                </button>
+              `
           }
 
-        </button>
+        </div>
 
       </div>
 
     </section>
 
   `;
+
+  actualizarCronometro();
+
+}
+
+
+/* =====================================================
+   VOLVER A COMPETENCIAS
+   ===================================================== */
+
+function volverACompetencias() {
+
+  if (
+    state.answers[state.index] === undefined
+  ) {
+
+    const confirmar =
+      confirm(
+        "⚠️ Aún no has respondido esta pregunta.\n\n" +
+        "Si sales, perderás el progreso de esta pregunta.\n\n" +
+        "¿Quieres continuar?"
+      );
+
+    if (!confirmar) {
+      return;
+    }
+
+    state.answers[state.index] = undefined;
+
+  }
+
+  if (state.cronometroIntervalo) {
+    clearInterval(state.cronometroIntervalo);
+    state.cronometroIntervalo = null;
+  }
+
+  state.tiempoTotalSegundos = obtenerTiempoTranscurrido();
+
+  renderIntroduction();
+
+}
+
+
+/* =====================================================
+   PREGUNTA ANTERIOR - SOLO PARA REVISAR
+   ===================================================== */
+
+function preguntaAnterior() {
+
+  if (state.index > 0) {
+
+    const confirmar =
+      confirm(
+        "🔙 ¿Volver a la pregunta anterior?\n\n" +
+        "Podrás revisarla, pero NO podrás cambiar tu respuesta.\n\n" +
+        "¿Continuar?"
+      );
+
+    if (!confirmar) {
+      return;
+    }
+
+    state.index--;
+
+    renderQuestion();
+
+  }
 
 }
 
@@ -1283,40 +1745,35 @@ function renderQuestion(){
    RESPONDER
    ===================================================== */
 
-function answer(i){
+function answer(i) {
 
-  if(
+  if (
     state.answers[
       state.index
     ] !== undefined
-  ){
+  ) {
 
     return;
 
   }
-
 
   const q =
     questions[
       state.index
     ];
 
-
   const correct =
     i === q[3];
-
 
   state.answers[
     state.index
   ] = i;
 
-
   state.categoryScores[
     q[0]
   ].total++;
 
-
-  if(correct){
+  if (correct) {
 
     state.score += 100;
 
@@ -1324,74 +1781,9 @@ function answer(i){
       q[0]
     ].correct++;
 
-
-    document
-      .getElementById(
-        "opt" + i
-      )
-      .classList
-      .add("correct");
-
   }
 
-  else{
-
-    document
-      .getElementById(
-        "opt" + i
-      )
-      .classList
-      .add("wrong");
-
-
-    document
-      .getElementById(
-        "opt" + q[3]
-      )
-      .classList
-      .add("correct");
-
-  }
-
-
-  document
-    .querySelectorAll(
-      ".option"
-    )
-    .forEach(
-      b => b.disabled = true
-    );
-
-
-  document
-    .getElementById(
-      "feedback"
-    )
-    .innerHTML = `
-
-      <div class="feedback">
-
-        ${
-          correct
-            ? "✅ <b>¡Correcto! +100 puntos</b>"
-            : "❌ <b>Respuesta incorrecta</b>"
-        }
-
-        <br>
-
-        ${q[4]}
-
-      </div>
-
-    `;
-
-
-  document
-    .getElementById(
-      "nextBtn"
-    )
-    .classList
-    .remove("hidden");
+  renderQuestion();
 
 }
 
@@ -1400,21 +1792,24 @@ function answer(i){
    SIGUIENTE PREGUNTA
    ===================================================== */
 
-function nextQuestion(){
+function nextQuestion() {
+
+  if (state.answers[state.index] === undefined) {
+    return alert("Por favor responde la pregunta antes de continuar.");
+  }
 
   state.index++;
 
-
-  if(
+  if (
     state.index <
     questions.length
-  ){
+  ) {
 
     renderQuestion();
 
-  }
+  } else {
 
-  else{
+    detenerCronometro();
 
     renderResult();
 
@@ -1427,47 +1822,44 @@ function nextQuestion(){
    DETERMINAR NIVEL
    ===================================================== */
 
-function level(score){
+function level(score) {
 
-  if(
+  if (
     score >= 2040
-  ){
+  ) {
 
     return [
       "🏆",
-      "Experto Digital Yacuanquer"
+      "Nivel Experto"
     ];
 
   }
 
-
-  if(
+  if (
     score >= 1680
-  ){
+  ) {
 
     return [
       "🥈",
-      "Usuario Digital Avanzado"
+      "Nivel Avanzado"
     ];
 
   }
 
-
-  if(
+  if (
     score >= 1200
-  ){
+  ) {
 
     return [
       "🥉",
-      "Usuario Digital"
+      "Nivel Básico"
     ];
 
   }
 
-
   return [
     "🌱",
-    "Explorador Digital"
+    "Nivel inicial"
   ];
 
 }
@@ -1477,11 +1869,10 @@ function level(score){
    RESULTADO
    ===================================================== */
 
-function renderResult(){
+function renderResult() {
 
   progressText.textContent =
     "¡Reto completado!";
-
 
   const [
     icon,
@@ -1491,7 +1882,6 @@ function renderResult(){
       state.score
     );
 
-
   const bars =
     categories
       .map(
@@ -1500,99 +1890,97 @@ function renderResult(){
           const s =
             state.categoryScores[c];
 
-
           const p =
-  s.total
-    ? Math.round(
-        s.correct /
-        s.total *
-        100
-      )
-    : 0;
+            s.total
+              ? Math.round(
+                s.correct /
+                s.total *
+                100
+              )
+              : 0;
 
-const wrong =
-  s.total - s.correct;
+          const wrong =
+            s.total -
+            s.correct;
 
+          return `
 
-return `
+            <div
+              class="bar-row"
+              style="
+                margin-bottom:22px;
+                padding:14px;
+                background:#f8fafc;
+                border-radius:12px;
+              ">
 
-  <div
-    class="bar-row"
-    style="
-      margin-bottom:22px;
-      padding:14px;
-      background:#f8fafc;
-      border-radius:12px;
-    ">
+              <div
+                style="
+                  display:flex;
+                  justify-content:space-between;
+                  align-items:center;
+                  gap:12px;
+                  margin-bottom:8px;
+                ">
 
-    <div
-      style="
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        gap:12px;
-        margin-bottom:8px;
-      ">
+                <b>
+                  ${c}
+                </b>
 
-      <b>
-        ${c}
-      </b>
+                <span style="font-weight:700;">
+                  ${p}%
+                </span>
 
-      <span style="font-weight:700;">
-        ${p}%
-      </span>
+              </div>
 
-    </div>
+              <div class="bar">
 
-    <div class="bar">
+                <div
+                  class="fill"
+                  style="width:${p}%">
+                </div>
 
-      <div
-        class="fill"
-        style="width:${p}%">
-      </div>
+              </div>
 
-    </div>
+              <div
+                style="
+                  display:flex;
+                  gap:18px;
+                  flex-wrap:wrap;
+                  margin-top:10px;
+                  font-size:14px;
+                ">
 
-    <div
-      style="
-        display:flex;
-        gap:18px;
-        flex-wrap:wrap;
-        margin-top:10px;
-        font-size:14px;
-      ">
+                <span>
+                  ✅ <b>${s.correct}</b>
+                  ${
+                    s.correct === 1
+                      ? "respuesta buena"
+                      : "respuestas buenas"
+                  }
+                </span>
 
-      <span>
-        ✅ <b>${s.correct}</b>
-        ${s.correct === 1
-          ? "respuesta buena"
-          : "respuestas buenas"}
-      </span>
+                <span>
+                  ❌ <b>${wrong}</b>
+                  ${
+                    wrong === 1
+                      ? "respuesta mala"
+                      : "respuestas malas"
+                  }
+                </span>
 
-      <span>
-        ❌ <b>${wrong}</b>
-        ${wrong === 1
-          ? "respuesta mala"
-          : "respuestas malas"}
-      </span>
+              </div>
 
-    </div>
+            </div>
 
-  </div>
-
-`;
+          `;
 
         }
       )
       .join("");
 
-
-  const resultPct =
-    Math.round(
-      state.score /
-      24
-    );
-
+  // ✅ CORREGIDO: Cálculo correcto del porcentaje
+  const resultPct = Math.round((state.score / 2400) * 100);
 
   app.innerHTML = `
 
@@ -1620,7 +2008,6 @@ return `
 
       </div>
 
-
       <div class="stats">
 
         <div class="stat">
@@ -1633,7 +2020,6 @@ return `
 
         </div>
 
-
         <div class="stat">
 
           <b>
@@ -1643,7 +2029,6 @@ return `
           Preguntas
 
         </div>
-
 
         <div class="stat">
 
@@ -1655,13 +2040,23 @@ return `
 
         </div>
 
-      </div>
+        <div class="stat">
 
+          <b id="tiempoResultado">
+            ${formatearTiempo(
+              state.tiempoTotalSegundos
+            )}
+          </b>
+
+          Tiempo
+
+        </div>
+
+      </div>
 
       <h3>
         📊 Tu perfil por competencia
       </h3>
-
 
       <div class="bars">
 
@@ -1669,8 +2064,16 @@ return `
 
       </div>
 
+      <div class="actions" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
 
-      <div class="actions">
+        <button
+          class="btn secondary"
+          onclick="volverACompetencias()"
+          style="background:#eef3fa;color:#26364f;">
+
+          📚 Revisar competencias
+
+        </button>
 
         <button
           class="btn"
@@ -1693,11 +2096,10 @@ return `
    ENCUESTA
    ===================================================== */
 
-function renderSurvey(){
+function renderSurvey() {
 
   progressText.textContent =
     "Encuesta final";
-
 
   app.innerHTML = `
 
@@ -1707,20 +2109,16 @@ function renderSurvey(){
         ÚLTIMO PASO
       </span>
 
-
       <h2>
         📝 Encuesta de satisfacción
       </h2>
-
 
       <p>
         Tu opinión nos ayudará a mejorar
         futuras capacitaciones.
       </p>
 
-
       <div class="survey">
-
 
         <div class="survey-group">
 
@@ -1731,7 +2129,7 @@ function renderSurvey(){
           <div class="survey-options">
 
             ${
-              ["1","2","3","4","5"]
+              ["1", "2", "3", "4", "5"]
                 .map(
                   x => `
 
@@ -1755,7 +2153,6 @@ function renderSurvey(){
 
         </div>
 
-
         <div class="survey-group">
 
           <label>
@@ -1766,7 +2163,7 @@ function renderSurvey(){
           <div class="survey-options">
 
             ${
-              ["Sí","Parcialmente","No"]
+              ["Sí", "Parcialmente", "No"]
                 .map(
                   x => `
 
@@ -1790,7 +2187,6 @@ function renderSurvey(){
 
         </div>
 
-
         <div class="survey-group">
 
           <label>
@@ -1801,7 +2197,7 @@ function renderSurvey(){
           <div class="survey-options">
 
             ${
-              ["Sí","Parcialmente","No"]
+              ["Sí", "Parcialmente", "No"]
                 .map(
                   x => `
 
@@ -1824,7 +2220,6 @@ function renderSurvey(){
           </div>
 
         </div>
-
 
         <div class="survey-group">
 
@@ -1854,7 +2249,6 @@ function renderSurvey(){
 
         </div>
 
-
         <div class="survey-group">
 
           <label>
@@ -1870,9 +2264,7 @@ function renderSurvey(){
 
         </div>
 
-
       </div>
-
 
       <div class="actions">
 
@@ -1894,10 +2286,13 @@ function renderSurvey(){
 
 
 /* =====================================================
-   ENVIAR RESULTADO A GOOGLE SHEETS
+   ENVIAR RESULTADO A GOOGLE SHEETS (CORREGIDO)
    ===================================================== */
 
-async function finish(){
+async function finish() {
+
+  // ✅ DETENER EL CRONÓMETRO PRIMERO
+  detenerCronometro();
 
   const get =
     n =>
@@ -1906,7 +2301,6 @@ async function finish(){
           `input[name="${n}"]:checked`
         )
         ?.value || "";
-
 
   state.survey = {
 
@@ -1931,13 +2325,12 @@ async function finish(){
 
   };
 
-
-  if(
+  if (
     !state.survey.s1 ||
     !state.survey.s2 ||
     !state.survey.s3 ||
     !state.survey.s4
-  ){
+  ) {
 
     return alert(
       "Completa las preguntas obligatorias de la encuesta."
@@ -1945,8 +2338,25 @@ async function finish(){
 
   }
 
+  // CAPTURAR EL TIEMPO FINAL
+  state.tiempoTotalSegundos = obtenerTiempoTranscurrido();
 
+  // ✅ CORREGIDO: Cálculo correcto del porcentaje
+  const porcentajeCorrecto = Math.round((state.score / 2400) * 100);
+
+  // ✅ CORREGIDO: Estructura completa para doPost
   const record = {
+
+    fecha: new Intl.DateTimeFormat("es-CO", {
+      timeZone: "America/Bogota",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false
+    }).format(new Date()),
 
     nombre:
       state.user.name,
@@ -1961,10 +2371,7 @@ async function finish(){
       state.score,
 
     porcentaje:
-      Math.round(
-        state.score /
-        24
-      ),
+      porcentajeCorrecto,
 
     nivel:
       level(
@@ -1972,26 +2379,33 @@ async function finish(){
       )[1],
 
     respuestas:
-      state.answers,
+      JSON.stringify(state.answers),
 
     resultadosCompetencias:
-      state.categoryScores,
+      JSON.stringify(state.categoryScores),
 
-    encuesta:
-      state.survey,
+    encuesta: {
+      s1: state.survey.s1,
+      s2: state.survey.s2,
+      s3: state.survey.s3,
+      s4: state.survey.s4,
+      s5: state.survey.s5
+    },
 
-    fecha:
-      new Date()
-        .toISOString()
+    tiempo:
+      formatearTiempo(
+        state.tiempoTotalSegundos
+      ),
+
+    tiempoSegundos:
+      state.tiempoTotalSegundos
 
   };
-
 
   localStorage.setItem(
     "ultimoRetoDigital",
     JSON.stringify(record)
   );
-
 
   app.innerHTML = `
 
@@ -2013,38 +2427,39 @@ async function finish(){
 
   `;
 
-
-  if(
+  if (
     GOOGLE_SHEETS_URL &&
     !GOOGLE_SHEETS_URL.includes(
       "PEGA_AQUI"
     )
-  ){
+  ) {
 
-    try{
+    try {
 
-      await fetch(
-        GOOGLE_SHEETS_URL,
-        {
-          method:"POST",
-
-          mode:"no-cors",
-
-          headers:{
-            "Content-Type":
-              "text/plain;charset=utf-8"
+      // ✅ CORREGIDO: usar text/plain para evitar el preflight CORS
+      // que Google Apps Script no responde (por eso no llegaba nada a la hoja)
+      const response = await fetch(
+        GOOGLE_SHEETS_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
           },
-
           body:
             JSON.stringify(record)
         }
       );
 
-    }
+      // ✅ Verificar la respuesta
+      const result = await response.json();
+      console.log("Respuesta de Google Sheets:", result);
 
-    catch(e){
+      if (!result.ok) {
+        console.warn("Error al guardar:", result.error);
+      }
 
-      console.warn(
+    } catch (e) {
+
+      console.error(
         "No se pudo enviar a Google Sheets:",
         e
       );
@@ -2053,21 +2468,66 @@ async function finish(){
 
   }
 
-
   mostrarFinal();
 
 }
 
 
 /* =====================================================
-   PANTALLA FINAL DESPUÉS DE ENVIAR
+   PANTALLA FINAL CON POSICIÓN (CORREGIDO)
    ===================================================== */
 
-function mostrarFinal(){
+async function mostrarFinal() {
 
   progressText.textContent =
     "Participación registrada";
 
+  let totalBuenas = 0;
+  let totalMalas = 0;
+
+  categories.forEach(c => {
+    const s = state.categoryScores[c];
+    totalBuenas += s.correct || 0;
+    totalMalas += (s.total || 0) - (s.correct || 0);
+  });
+
+  let puesto = "—";
+  let totalParticipantes = 0;
+  let mensajePuesto = "⏳ Calculando posición...";
+  let emojiPuesto = "📍";
+
+  try {
+    // ✅ CORREGIDO: Construir URL correctamente
+    const urlPosicion = GOOGLE_SHEETS_URL +
+      "?action=posicion&nombre=" + encodeURIComponent(state.user.name) +
+      "&dependencia=" + encodeURIComponent(state.user.dep);
+
+    const response = await fetch(urlPosicion);
+
+    if (!response.ok) throw new Error("Error en la respuesta del servidor");
+
+    const data = await response.json();
+
+    if (data.ok) {
+      puesto = data.puesto > 0 ? data.puesto : "—";
+      totalParticipantes = data.totalParticipantes || 0;
+    }
+  } catch (error) {
+    console.warn("No se pudo obtener la posición:", error);
+    // ✅ Si falla, no mostrar error al usuario
+  }
+
+  // ✅ CORREGIDO: Mensajes según posición
+  if (totalParticipantes > 0 && puesto !== "—") {
+    mensajePuesto = "📍 Tu puesto es #" + puesto + " de " + totalParticipantes + " participantes";
+    emojiPuesto = "📍";
+  } else if (totalParticipantes > 0) {
+    mensajePuesto = "📊 Participante registrado";
+    emojiPuesto = "📊";
+  } else {
+    mensajePuesto = "🌟 Eres el primer participante registrado";
+    emojiPuesto = "🌟";
+  }
 
   app.innerHTML = `
 
@@ -2077,17 +2537,16 @@ function mostrarFinal(){
         🎉
       </div>
 
-
       <h2>
-        ¡Gracias por participar!
+        ¡Gracias por participar! <br>
+        <span style="font-size:18px;color:#667085;">
+          Área Ingeniería de Sistemas - Alcaldía Yacuanquer (N)
+        </span>
       </h2>
 
-
       <p>
-        Tu participación ha sido registrada
-        correctamente.
+        Tu participación ha sido registrada correctamente.
       </p>
-
 
       <div class="stats">
 
@@ -2101,35 +2560,56 @@ function mostrarFinal(){
 
         </div>
 
-
         <div class="stat">
 
           <b>
-            ${Math.round(
-              state.score /
-              24
-            )}%
+            ✅ ${totalBuenas} | ❌ ${totalMalas}
           </b>
 
-          Resultado
+          Buenas / Malas
 
         </div>
 
-
         <div class="stat">
 
           <b>
-            ${level(
-              state.score
-            )[1]}
+            ${level(state.score)[1]}
           </b>
 
           Nivel
 
         </div>
 
+        <div class="stat">
+
+          <b>
+            ${formatearTiempo(state.tiempoTotalSegundos)}
+          </b>
+
+          Tiempo
+
+        </div>
+
       </div>
 
+      <div style="
+        background: #f0f7ff;
+        border-radius: 16px;
+        padding: 20px;
+        margin: 20px 0;
+        border: 2px solid #d4e4ff;
+        text-align: center;
+      ">
+
+        <div style="font-size: 48px; margin-bottom: 5px;">
+          ${emojiPuesto}
+        </div>
+
+        <p style="font-size: 20px; font-weight: 700; color: #1d4ed8; margin: 0;">
+          ${mensajePuesto}
+        </p>
+
+      </div>
 
       <div class="notice">
 
@@ -2138,14 +2618,22 @@ function mostrarFinal(){
 
       </div>
 
-
-      <div class="actions">
+      <div class="actions" style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
 
         <button
           class="btn"
           onclick="terminarReto()">
 
           🏁 TERMINAR RETO
+
+        </button>
+
+        <button
+          class="btn secondary"
+          onclick="volverACompetencias()"
+          style="background:#eef3fa;color:#26364f;">
+
+          📚 Revisar competencias
 
         </button>
 
@@ -2162,11 +2650,12 @@ function mostrarFinal(){
    TERMINAR RETO
    ===================================================== */
 
-function terminarReto(){
+function terminarReto() {
+
+  detenerCronometro();
 
   progressText.textContent =
     "Reto finalizado";
-
 
   app.innerHTML = `
 
@@ -2176,11 +2665,9 @@ function terminarReto(){
         🏁
       </div>
 
-
       <h2>
         ¡Reto finalizado!
       </h2>
-
 
       <p>
         Gracias por participar en la capacitación
@@ -2188,13 +2675,11 @@ function terminarReto(){
         de la Alcaldía de Yacuanquer.
       </p>
 
-
       <div class="notice">
 
         ✅ Tu participación ya fue registrada.
 
       </div>
-
 
       <p class="muted">
 

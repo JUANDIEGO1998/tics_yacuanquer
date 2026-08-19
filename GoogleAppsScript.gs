@@ -1,4 +1,3 @@
-
 const SHEET_NAME = "Resultados";
 const DASHBOARD_NAME = "Dashboard";
 
@@ -31,13 +30,11 @@ function setup() {
     "Encuesta 2 - Aplicabilidad",
     "Encuesta 3 - Metodología",
     "Encuesta 4 - Tema a profundizar",
-    "Encuesta 5 - Sugerencia"
+    "Encuesta 5 - Sugerencia",
+    "Tiempo",
+    "Tiempo (segundos)"
   ];
 
-  /*
-   * Si la hoja está vacía,
-   * crear encabezados.
-   */
   if (sheet.getLastRow() === 0) {
 
     sheet
@@ -46,16 +43,10 @@ function setup() {
 
   }
 
-  /*
-   * Mantener únicamente la primera fila
-   * inmovilizada en Resultados.
-   */
   sheet.setFrozenRows(1);
 
-  /*
-   * Crear o actualizar Dashboard.
-   */
   crearDashboard();
+
 }
 
 
@@ -91,30 +82,21 @@ function doPost(e) {
         e.postData.contents
       );
 
+    const ss =
+      SpreadsheetApp
+        .getActiveSpreadsheet();
 
     let sheet =
-      SpreadsheetApp
-        .getActiveSpreadsheet()
-        .getSheetByName(
-          SHEET_NAME
-        );
+      ss.getSheetByName(
+        SHEET_NAME
+      );
 
-
-    /*
-     * Si no existe Resultados,
-     * crearla.
-     */
     if (!sheet) {
-
-      const ss =
-        SpreadsheetApp
-          .getActiveSpreadsheet();
 
       sheet =
         ss.insertSheet(
           SHEET_NAME
         );
-
 
       const headers = [
         "Fecha",
@@ -130,9 +112,10 @@ function doPost(e) {
         "Encuesta 2 - Aplicabilidad",
         "Encuesta 3 - Metodología",
         "Encuesta 4 - Tema a profundizar",
-        "Encuesta 5 - Sugerencia"
+        "Encuesta 5 - Sugerencia",
+        "Tiempo",
+        "Tiempo (segundos)"
       ];
-
 
       sheet
         .getRange(
@@ -145,19 +128,13 @@ function doPost(e) {
           [headers]
         );
 
-
       sheet.setFrozenRows(1);
 
     }
 
-
     const encuesta =
       data.encuesta || {};
 
-
-    /*
-     * Registrar el resultado.
-     */
     sheet.appendRow([
 
       data.fecha ||
@@ -172,8 +149,9 @@ function doPost(e) {
       data.cargo ||
         "",
 
-      data.puntaje ||
-        0,
+      Number(
+        data.puntaje || 0
+      ),
 
       data.porcentaje ||
         0,
@@ -182,13 +160,11 @@ function doPost(e) {
         "",
 
       JSON.stringify(
-        data.respuestas ||
-        []
+        data.respuestas || []
       ),
 
       JSON.stringify(
-        data.resultadosCompetencias ||
-        {}
+        data.resultadosCompetencias || {}
       ),
 
       encuesta.s1 ||
@@ -204,17 +180,18 @@ function doPost(e) {
         "",
 
       encuesta.s5 ||
-        ""
+        "",
+
+      data.tiempo ||
+        "00:00",
+
+      Number(
+        data.tiempoSegundos || 0
+      )
 
     ]);
 
-
-    /*
-     * Actualizar Dashboard
-     * después de cada participación.
-     */
     crearDashboard();
-
 
     return ContentService
       .createTextOutput(
@@ -226,8 +203,9 @@ function doPost(e) {
         ContentService.MimeType.JSON
       );
 
+  }
 
-  } catch (error) {
+  catch (error) {
 
     return ContentService
       .createTextOutput(
@@ -246,15 +224,233 @@ function doPost(e) {
 
 
 /* =====================================================
-   SERVICIO ACTIVO
+   CONSULTAR GANADORES
    ===================================================== */
 
 function doGet() {
 
-  return ContentService
-    .createTextOutput(
-      "Reto Digital Yacuanquer: servicio activo."
+  try {
+
+    const ss =
+      SpreadsheetApp
+        .getActiveSpreadsheet();
+
+    const sheet =
+      ss.getSheetByName(
+        SHEET_NAME
+      );
+
+    if (!sheet) {
+
+      return ContentService
+        .createTextOutput(
+          JSON.stringify({
+            ok: true,
+            ganadores: []
+          })
+        )
+        .setMimeType(
+          ContentService.MimeType.JSON
+        );
+
+    }
+
+    const ultimaFila =
+      sheet.getLastRow();
+
+    if (ultimaFila < 2) {
+
+      return ContentService
+        .createTextOutput(
+          JSON.stringify({
+            ok: true,
+            ganadores: []
+          })
+        )
+        .setMimeType(
+          ContentService.MimeType.JSON
+        );
+
+    }
+
+    const datos =
+      sheet
+        .getRange(
+          2,
+          1,
+          ultimaFila - 1,
+          16
+        )
+        .getValues();
+
+    const participantes =
+      datos.map(
+        function(row) {
+
+          const puntaje =
+            Number(
+              row[4] || 0
+            );
+
+          const porcentaje =
+            convertirPorcentaje(
+              row[5]
+            ) || 0;
+
+          const buenas =
+            Math.round(
+              puntaje / 100
+            );
+
+          const malas =
+            Math.max(
+              0,
+              24 - buenas
+            );
+
+          return {
+
+            nombre:
+              String(
+                row[1] || ""
+              ),
+
+            dependencia:
+              String(
+                row[2] || ""
+              ),
+
+            cargo:
+              String(
+                row[3] || ""
+              ),
+
+            puntaje:
+              puntaje,
+
+            porcentaje:
+              porcentaje,
+
+            buenas:
+              buenas,
+
+            malas:
+              malas,
+
+            nivel:
+              String(
+                row[6] || ""
+              ),
+
+            tiempo:
+              String(
+                row[14] || "00:00"
+              ),
+
+            tiempoSegundos:
+              Number(
+                row[15] || 0
+              )
+
+          };
+
+        }
+      );
+
+
+    participantes.sort(
+      function(a, b) {
+
+        if (
+          b.puntaje !==
+          a.puntaje
+        ) {
+
+          return (
+            b.puntaje -
+            a.puntaje
+          );
+
+        }
+
+        if (
+          a.tiempoSegundos !==
+          b.tiempoSegundos
+        ) {
+
+          return (
+            a.tiempoSegundos -
+            b.tiempoSegundos
+          );
+
+        }
+
+        return (
+          b.buenas -
+          a.buenas
+        );
+
+      }
     );
+
+
+    const ganadores =
+      participantes
+        .slice(
+          0,
+          2
+        )
+        .map(
+          function(
+            participante,
+            index
+          ) {
+
+            return {
+
+              puesto:
+                index + 1,
+
+              ...participante
+
+            };
+
+          }
+        );
+
+
+    return ContentService
+      .createTextOutput(
+        JSON.stringify({
+
+          ok: true,
+
+          ganadores:
+            ganadores
+
+        })
+      )
+      .setMimeType(
+        ContentService.MimeType.JSON
+      );
+
+  }
+
+  catch (error) {
+
+    return ContentService
+      .createTextOutput(
+        JSON.stringify({
+          ok: false,
+          error: String(error),
+          ganadores: []
+        })
+      )
+      .setMimeType(
+        ContentService.MimeType.JSON
+      );
+
+  }
 
 }
 
@@ -269,26 +465,19 @@ function crearDashboard() {
     SpreadsheetApp
       .getActiveSpreadsheet();
 
-
   const resultados =
     ss.getSheetByName(
       SHEET_NAME
     );
 
-
   if (!resultados) {
     return;
   }
 
-
-  /*
-   * Crear Dashboard si no existe.
-   */
   let dashboard =
     ss.getSheetByName(
       DASHBOARD_NAME
     );
-
 
   if (!dashboard) {
 
@@ -299,29 +488,13 @@ function crearDashboard() {
 
   }
 
+  dashboard.setFrozenRows(0);
+
 
   /* =====================================================
      LIMPIAR DASHBOARD
      ===================================================== */
 
-  /*
-   * Eliminar filas inmovilizadas.
-   */
-  dashboard.setFrozenRows(0);
-
-
-  /*
-   * Separar cualquier combinación antigua
-   * que haya quedado de versiones anteriores.
-   *
-   * Esto evita los errores:
-   *
-   * "No se pueden combinar filas inmovilizadas..."
-   *
-   * y
-   *
-   * "Debes seleccionar todas las celdas..."
-   */
   try {
 
     dashboard
@@ -333,21 +506,17 @@ function crearDashboard() {
       )
       .breakApart();
 
-  } catch (error) {
+  }
 
+  catch (error) {
     console.log(
-      "No había combinaciones que separar."
+      "No había combinaciones."
     );
-
   }
 
 
-  /*
-   * Eliminar gráficos anteriores.
-   */
   const graficos =
     dashboard.getCharts();
-
 
   graficos.forEach(
     function(grafico) {
@@ -360,43 +529,44 @@ function crearDashboard() {
   );
 
 
-  /*
-   * Limpiar contenido y formato.
-   */
   dashboard.clear();
 
 
   /* =====================================================
-     COMPROBAR SI HAY RESULTADOS
+     VERIFICAR DATOS
      ===================================================== */
 
   const ultimaFila =
     resultados.getLastRow();
 
-
   if (ultimaFila < 2) {
 
     dashboard
-      .getRange("A1")
-      .setValue(
-        "📊 RETO DIGITAL YACUANQUER 2026"
-      );
-
+      .getRange(1, 1, 1, 9)
+      .setValues([[
+        "📊 RETO DIGITAL YACUANQUER 2026",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]]);
 
     dashboard
-      .getRange("A1")
-      .setFontSize(22)
-      .setFontWeight("bold")
+      .getRange(1, 1, 1, 9)
       .setBackground("#1F4E78")
-      .setFontColor("#FFFFFF");
-
+      .setFontColor("#FFFFFF")
+      .setFontSize(20)
+      .setFontWeight("bold");
 
     dashboard
       .getRange("A3")
       .setValue(
         "Todavía no hay participantes registrados."
       );
-
 
     return;
 
@@ -413,7 +583,7 @@ function crearDashboard() {
         2,
         1,
         ultimaFila - 1,
-        14
+        16
       )
       .getValues();
 
@@ -423,17 +593,20 @@ function crearDashboard() {
 
 
   /* =====================================================
-     VARIABLES
+     VARIABLES GENERALES
      ===================================================== */
 
   let sumaPorcentaje = 0;
 
   let cantidadPorcentaje = 0;
 
+  let puntajeTotal = 0;
 
-  /*
-   * Niveles siempre disponibles.
-   */
+  let totalBuenas = 0;
+
+  let totalMalas = 0;
+
+
   const niveles = {
 
     "Avanzado": 0,
@@ -447,18 +620,52 @@ function crearDashboard() {
   };
 
 
-  /*
-   * Dependencias.
-   */
   const dependencias = {};
+
+  const competencias = {};
 
 
   /* =====================================================
-     PROCESAR CADA PARTICIPANTE
+     PROCESAR PARTICIPANTES
      ===================================================== */
 
   datos.forEach(
     function(row) {
+
+
+      /* -----------------------------------------------
+         PUNTAJE TOTAL
+         ----------------------------------------------- */
+
+      const puntaje =
+        Number(
+          row[4] || 0
+        );
+
+      puntajeTotal +=
+        puntaje;
+
+
+      /* -----------------------------------------------
+         BUENAS Y MALAS
+         ----------------------------------------------- */
+
+      const buenas =
+        Math.round(
+          puntaje / 100
+        );
+
+      const malas =
+        Math.max(
+          0,
+          24 - buenas
+        );
+
+      totalBuenas +=
+        buenas;
+
+      totalMalas +=
+        malas;
 
 
       /* -----------------------------------------------
@@ -469,7 +676,6 @@ function crearDashboard() {
         convertirPorcentaje(
           row[5]
         );
-
 
       if (
         porcentaje !== null
@@ -492,11 +698,6 @@ function crearDashboard() {
           row[6]
         );
 
-
-      /*
-       * Si el nivel viene vacío o no se reconoce,
-       * calcularlo automáticamente mediante porcentaje.
-       */
       if (
         !nivel &&
         porcentaje !== null
@@ -509,21 +710,12 @@ function crearDashboard() {
 
       }
 
-
-      /*
-       * Si no existe nivel ni porcentaje,
-       * dejarlo como "Por fortalecer".
-       *
-       * Esto permite que el participante
-       * no desaparezca del gráfico.
-       */
       if (!nivel) {
 
         nivel =
           "Por fortalecer";
 
       }
-
 
       niveles[nivel]++;
 
@@ -537,7 +729,6 @@ function crearDashboard() {
           row[2] || ""
         ).trim();
 
-
       if (!dependencia) {
 
         dependencia =
@@ -545,30 +736,143 @@ function crearDashboard() {
 
       }
 
-
       if (
-        !dependencias[dependencia]
+        !dependencias[
+          dependencia
+        ]
       ) {
 
-        dependencias[dependencia] =
-          0;
+        dependencias[
+          dependencia
+        ] = 0;
 
       }
 
+      dependencias[
+        dependencia
+      ]++;
 
-      dependencias[dependencia]++;
+
+      /* -----------------------------------------------
+         RESULTADOS POR COMPETENCIA
+         ----------------------------------------------- */
+
+      const resultadosCompetencia =
+        row[8];
+
+      if (
+        resultadosCompetencia
+      ) {
+
+        try {
+
+          const objeto =
+            JSON.parse(
+              resultadosCompetencia
+            );
+
+
+          Object.keys(
+            objeto
+          ).forEach(
+            function(
+              nombreCompetencia
+            ) {
+
+
+              if (
+                !competencias[
+                  nombreCompetencia
+                ]
+              ) {
+
+                competencias[
+                  nombreCompetencia
+                ] = {
+
+                  buenas: 0,
+
+                  malas: 0,
+
+                  total: 0
+
+                };
+
+              }
+
+
+              const datosCompetencia =
+                objeto[
+                  nombreCompetencia
+                ];
+
+
+              const buenasCompetencia =
+                Number(
+                  datosCompetencia.correct ||
+                  datosCompetencia.buenas ||
+                  0
+                );
+
+
+              const totalCompetencia =
+                Number(
+                  datosCompetencia.total ||
+                  0
+                );
+
+
+              const malasCompetencia =
+                Math.max(
+                  0,
+                  totalCompetencia -
+                  buenasCompetencia
+                );
+
+
+              competencias[
+                nombreCompetencia
+              ].buenas +=
+                buenasCompetencia;
+
+
+              competencias[
+                nombreCompetencia
+              ].malas +=
+                malasCompetencia;
+
+
+              competencias[
+                nombreCompetencia
+              ].total +=
+                totalCompetencia;
+
+            }
+          );
+
+        }
+
+        catch(error) {
+
+          console.log(
+            "No se pudo leer competencia:",
+            error
+          );
+
+        }
+
+      }
 
     }
   );
 
 
   /* =====================================================
-     PROMEDIO GENERAL
+     PROMEDIOS
      ===================================================== */
 
   let promedio =
     0;
-
 
   if (
     cantidadPorcentaje > 0
@@ -583,13 +887,28 @@ function crearDashboard() {
   }
 
 
+  let promedioPuntaje =
+    0;
+
+  if (
+    totalParticipantes > 0
+  ) {
+
+    promedioPuntaje =
+      Math.round(
+        puntajeTotal /
+        totalParticipantes
+      );
+
+  }
+
+
   /* =====================================================
      NIVEL MÁS FRECUENTE
      ===================================================== */
 
   let nivelPrincipal =
     "Sin datos";
-
 
   let mayorCantidad =
     0;
@@ -618,74 +937,182 @@ function crearDashboard() {
 
 
   /* =====================================================
+     RANKING
+     ===================================================== */
+
+  const ranking =
+    datos
+      .map(
+        function(row) {
+
+          const puntaje =
+            Number(
+              row[4] || 0
+            );
+
+          const buenas =
+            Math.round(
+              puntaje / 100
+            );
+
+          const malas =
+            Math.max(
+              0,
+              24 - buenas
+            );
+
+          return {
+
+            nombre:
+              String(
+                row[1] || ""
+              ),
+
+            dependencia:
+              String(
+                row[2] || ""
+              ),
+
+            cargo:
+              String(
+                row[3] || ""
+              ),
+
+            puntaje:
+              puntaje,
+
+            buenas:
+              buenas,
+
+            malas:
+              malas,
+
+            porcentaje:
+              convertirPorcentaje(
+                row[5]
+              ) || 0,
+
+            nivel:
+              String(
+                row[6] || ""
+              ),
+
+            tiempo:
+              String(
+                row[14] || "00:00"
+              ),
+
+            tiempoSegundos:
+              Number(
+                row[15] || 0
+              )
+
+          };
+
+        }
+      )
+      .sort(
+        function(a, b) {
+
+          if (
+            b.puntaje !==
+            a.puntaje
+          ) {
+
+            return (
+              b.puntaje -
+              a.puntaje
+            );
+
+          }
+
+          if (
+            a.tiempoSegundos !==
+            b.tiempoSegundos
+          ) {
+
+            return (
+              a.tiempoSegundos -
+              b.tiempoSegundos
+            );
+
+          }
+
+          return (
+            b.buenas -
+            a.buenas
+          );
+
+        }
+      );
+
+
+  const primerPuesto =
+    ranking[0] || null;
+
+  const segundoPuesto =
+    ranking[1] || null;
+
+
+  /* =====================================================
      TÍTULO
      ===================================================== */
 
   dashboard
-    .getRange("A1:H1")
-    .setValues([
+    .getRange(1, 1, 1, 9)
+    .setValues([[
+      "📊 RETO DIGITAL YACUANQUER 2026",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]]);
 
-      [
-        "📊 RETO DIGITAL YACUANQUER 2026",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        ""
-      ]
-
-    ]);
-
-
-  /*
-   * NO usamos merge().
-   */
   dashboard
-    .getRange("A1:H1")
-    .setBackground(
-      "#1F4E78"
-    )
-    .setFontColor(
-      "#FFFFFF"
-    )
-    .setFontSize(
-      20
-    )
-    .setFontWeight(
-      "bold"
-    );
+    .getRange(1, 1, 1, 9)
+    .setBackground("#1F4E78")
+    .setFontColor("#FFFFFF")
+    .setFontSize(20)
+    .setFontWeight("bold");
 
 
   dashboard
     .getRange("A2")
     .setValue(
-      "Resultados de la evaluación de competencias digitales"
+      "Resultados generales de la evaluación de competencias digitales"
     );
-
 
   dashboard
     .getRange("A2")
-    .setFontSize(
-      12
-    )
-    .setFontStyle(
-      "italic"
-    );
+    .setFontSize(12)
+    .setFontStyle("italic");
 
 
   /* =====================================================
-     INDICADORES
+     INDICADORES PRINCIPALES
      ===================================================== */
 
   dashboard
-    .getRange("A4:B7")
+    .getRange("A4:B11")
     .setValues([
 
       [
         "👥 Total participantes",
         totalParticipantes
+      ],
+
+      [
+        "🎯 Puntaje total acumulado",
+        puntajeTotal
+      ],
+
+      [
+        "📊 Puntaje promedio",
+        promedioPuntaje
       ],
 
       [
@@ -701,77 +1128,318 @@ function crearDashboard() {
       [
         "👤 Participantes en ese nivel",
         mayorCantidad
+      ],
+
+      [
+        "✅ Total respuestas buenas",
+        totalBuenas
+      ],
+
+      [
+        "❌ Total respuestas malas",
+        totalMalas
       ]
 
     ]);
 
 
   dashboard
-    .getRange("A4:A7")
-    .setFontWeight(
-      "bold"
-    );
+    .getRange("A4:A11")
+    .setFontWeight("bold");
 
 
   dashboard
     .getRange("A4:B4")
-    .setBackground(
-      "#E8F0FE"
-    );
-
+    .setBackground("#E8F0FE");
 
   dashboard
     .getRange("A5:B5")
-    .setBackground(
-      "#E6F4EA"
-    );
-
+    .setBackground("#E6F4EA");
 
   dashboard
     .getRange("A6:B6")
-    .setBackground(
-      "#FFF4CE"
-    );
-
+    .setBackground("#E8F0FE");
 
   dashboard
     .getRange("A7:B7")
-    .setBackground(
-      "#FCE8E6"
-    );
+    .setBackground("#E6F4EA");
+
+  dashboard
+    .getRange("A8:B8")
+    .setBackground("#FFF4CE");
+
+  dashboard
+    .getRange("A9:B9")
+    .setBackground("#FCE8E6");
+
+  dashboard
+    .getRange("A10:B10")
+    .setBackground("#E6F4EA");
+
+  dashboard
+    .getRange("A11:B11")
+    .setBackground("#FCE8E6");
 
 
   /* =====================================================
-     TABLA DE DEPENDENCIAS
+     GANADORES
      ===================================================== */
 
   dashboard
-    .getRange("A10:B10")
-    .setValues([
+    .getRange("A13:G13")
+    .setValues([[
+      "🏆 GANADORES DEL RETO",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]]);
 
-      [
-        "Dependencia",
-        "Participantes"
-      ]
-
-    ]);
+  dashboard
+    .getRange("A13:G13")
+    .setBackground("#1F4E78")
+    .setFontColor("#FFFFFF")
+    .setFontSize(15)
+    .setFontWeight("bold");
 
 
   dashboard
-    .getRange("A10:B10")
-    .setFontWeight(
-      "bold"
+    .getRange("A14:G14")
+    .setValues([[
+      "Puesto",
+      "Participante",
+      "Dependencia",
+      "Cargo",
+      "Buenas",
+      "Puntaje",
+      "Tiempo"
+    ]]);
+
+  dashboard
+    .getRange("A14:G14")
+    .setBackground("#D9EAF7")
+    .setFontWeight("bold");
+
+
+  const filasGanadores = [];
+
+
+  if (primerPuesto) {
+
+    filasGanadores.push([
+
+      "🥇 Primer puesto",
+
+      primerPuesto.nombre,
+
+      primerPuesto.dependencia,
+
+      primerPuesto.cargo,
+
+      primerPuesto.buenas,
+
+      primerPuesto.puntaje,
+
+      primerPuesto.tiempo
+
+    ]);
+
+  }
+
+
+  if (segundoPuesto) {
+
+    filasGanadores.push([
+
+      "🥈 Segundo puesto",
+
+      segundoPuesto.nombre,
+
+      segundoPuesto.dependencia,
+
+      segundoPuesto.cargo,
+
+      segundoPuesto.buenas,
+
+      segundoPuesto.puntaje,
+
+      segundoPuesto.tiempo
+
+    ]);
+
+  }
+
+
+  if (
+    filasGanadores.length > 0
+  ) {
+
+    dashboard
+      .getRange(
+        15,
+        1,
+        filasGanadores.length,
+        7
+      )
+      .setValues(
+        filasGanadores
+      );
+
+  }
+
+
+  /* =====================================================
+     COMPETENCIAS
+     ===================================================== */
+
+  const filaCompetenciasInicio =
+    19;
+
+
+  dashboard
+    .getRange(
+      filaCompetenciasInicio,
+      1,
+      1,
+      4
     )
-    .setBackground(
-      "#1F4E78"
+    .setValues([[
+      "📚 RESULTADOS POR COMPETENCIA",
+      "",
+      "",
+      ""
+    ]]);
+
+
+  dashboard
+    .getRange(
+      filaCompetenciasInicio,
+      1,
+      1,
+      4
     )
-    .setFontColor(
-      "#FFFFFF"
+    .setBackground("#1F4E78")
+    .setFontColor("#FFFFFF")
+    .setFontWeight("bold");
+
+
+  dashboard
+    .getRange(
+      filaCompetenciasInicio + 1,
+      1,
+      1,
+      4
+    )
+    .setValues([[
+      "Competencia",
+      "Respuestas buenas",
+      "Respuestas malas",
+      "Total respuestas"
+    ]]);
+
+
+  dashboard
+    .getRange(
+      filaCompetenciasInicio + 1,
+      1,
+      1,
+      4
+    )
+    .setBackground("#D9EAF7")
+    .setFontWeight("bold");
+
+
+  const filasCompetencias = [];
+
+
+  Object.keys(
+    competencias
+  )
+    .sort()
+    .forEach(
+      function(nombreCompetencia) {
+
+        const datosCompetencia =
+          competencias[
+            nombreCompetencia
+          ];
+
+        filasCompetencias.push([
+
+          nombreCompetencia,
+
+          datosCompetencia.buenas,
+
+          datosCompetencia.malas,
+
+          datosCompetencia.total
+
+        ]);
+
+      }
     );
 
 
+  if (
+    filasCompetencias.length > 0
+  ) {
+
+    dashboard
+      .getRange(
+        filaCompetenciasInicio + 2,
+        1,
+        filasCompetencias.length,
+        4
+      )
+      .setValues(
+        filasCompetencias
+      );
+
+  }
+
+
+  /* =====================================================
+     DEPENDENCIAS
+     ===================================================== */
+
+  const filaDependenciasInicio =
+    Math.max(
+      27,
+      filaCompetenciasInicio +
+      filasCompetencias.length +
+      4
+    );
+
+
+  dashboard
+    .getRange(
+      filaDependenciasInicio,
+      1,
+      1,
+      2
+    )
+    .setValues([[
+      "Dependencia",
+      "Participantes"
+    ]]);
+
+
+  dashboard
+    .getRange(
+      filaDependenciasInicio,
+      1,
+      1,
+      2
+    )
+    .setFontWeight("bold")
+    .setBackground("#1F4E78")
+    .setFontColor("#FFFFFF");
+
+
   let filaDependencia =
-    11;
+    filaDependenciasInicio + 1;
 
 
   Object.keys(
@@ -788,17 +1456,12 @@ function crearDashboard() {
             1,
             2
           )
-          .setValues([
-
-            [
-              dependencia,
-              dependencias[
-                dependencia
-              ]
+          .setValues([[
+            dependencia,
+            dependencias[
+              dependencia
             ]
-
-          ]);
-
+          ]]);
 
         filaDependencia++;
 
@@ -807,32 +1470,36 @@ function crearDashboard() {
 
 
   /* =====================================================
-     TABLA DE NIVELES
+     NIVELES
      ===================================================== */
 
-  dashboard
-    .getRange("D10:E10")
-    .setValues([
-
-      [
-        "Nivel",
-        "Participantes"
-      ]
-
-    ]);
+  const filaNivelesInicio =
+    filaDependenciasInicio;
 
 
   dashboard
-    .getRange("D10:E10")
-    .setFontWeight(
-      "bold"
+    .getRange(
+      filaNivelesInicio,
+      4,
+      1,
+      2
     )
-    .setBackground(
-      "#1F4E78"
+    .setValues([[
+      "Nivel",
+      "Participantes"
+    ]]);
+
+
+  dashboard
+    .getRange(
+      filaNivelesInicio,
+      4,
+      1,
+      2
     )
-    .setFontColor(
-      "#FFFFFF"
-    );
+    .setFontWeight("bold")
+    .setBackground("#1F4E78")
+    .setFontColor("#FFFFFF");
 
 
   const ordenNiveles = [
@@ -849,7 +1516,7 @@ function crearDashboard() {
 
 
   let filaNivel =
-    11;
+    filaNivelesInicio + 1;
 
 
   ordenNiveles.forEach(
@@ -862,19 +1529,12 @@ function crearDashboard() {
           1,
           2
         )
-        .setValues([
-
-          [
-            nivel,
-            niveles[nivel]
-          ]
-
-        ]);
+        .setValues([[
+          nivel,
+          niveles[nivel]
+        ]]);
 
 
-      /*
-       * Colores.
-       */
       let color =
         "#D9EAD3";
 
@@ -888,7 +1548,6 @@ function crearDashboard() {
 
       }
 
-
       if (
         nivel === "Competente"
       ) {
@@ -898,7 +1557,6 @@ function crearDashboard() {
 
       }
 
-
       if (
         nivel === "Básico"
       ) {
@@ -907,7 +1565,6 @@ function crearDashboard() {
           "#FBBC04";
 
       }
-
 
       if (
         nivel === "Por fortalecer"
@@ -945,57 +1602,66 @@ function crearDashboard() {
      EXPLICACIÓN DE NIVELES
      ===================================================== */
 
-  dashboard
-    .getRange("D17:F17")
-    .setValues([
-
-      [
-        "Nivel",
-        "Color",
-        "¿Qué significa?"
-      ]
-
-    ]);
+  const filaExplicacion =
+    filaNivelesInicio + 7;
 
 
   dashboard
-    .getRange("D17:F17")
-    .setFontWeight(
-      "bold"
+    .getRange(
+      filaExplicacion,
+      4,
+      1,
+      3
     )
-    .setBackground(
-      "#1F4E78"
-    )
-    .setFontColor(
-      "#FFFFFF"
-    );
+    .setValues([[
+      "Nivel",
+      "Rango",
+      "¿Qué significa?"
+    ]]);
 
 
   dashboard
-    .getRange("D18:F21")
+    .getRange(
+      filaExplicacion,
+      4,
+      1,
+      3
+    )
+    .setFontWeight("bold")
+    .setBackground("#1F4E78")
+    .setFontColor("#FFFFFF");
+
+
+  dashboard
+    .getRange(
+      filaExplicacion + 1,
+      4,
+      4,
+      3
+    )
     .setValues([
 
       [
         "Avanzado",
-        "🟢",
+        "80% a 100%",
         "Buen dominio de las competencias digitales."
       ],
 
       [
         "Competente",
-        "🔵",
+        "60% a 79%",
         "Desempeño adecuado en el uso de herramientas digitales."
       ],
 
       [
         "Básico",
-        "🟡",
+        "40% a 59%",
         "Tiene conocimientos iniciales y puede fortalecer algunas áreas."
       ],
 
       [
         "Por fortalecer",
-        "🔴",
+        "0% a 39%",
         "Requiere mayor acompañamiento y capacitación."
       ]
 
@@ -1003,15 +1669,17 @@ function crearDashboard() {
 
 
   dashboard
-    .getRange("D18:D21")
-    .setFontWeight(
-      "bold"
-    );
+    .getRange(
+      filaExplicacion + 1,
+      4,
+      4,
+      1
+    )
+    .setFontWeight("bold");
 
 
   /* =====================================================
-     GRÁFICO 1
-     PARTICIPANTES POR DEPENDENCIA
+     GRÁFICO DE DEPENDENCIAS
      ===================================================== */
 
   const cantidadDependencias =
@@ -1026,7 +1694,7 @@ function crearDashboard() {
 
     const rangoDependencias =
       dashboard.getRange(
-        10,
+        filaDependenciasInicio,
         1,
         cantidadDependencias + 1,
         2
@@ -1043,7 +1711,7 @@ function crearDashboard() {
           rangoDependencias
         )
         .setPosition(
-          10,
+          filaDependenciasInicio,
           7,
           0,
           0
@@ -1055,8 +1723,7 @@ function crearDashboard() {
         .setOption(
           "legend",
           {
-            position:
-              "none"
+            position: "none"
           }
         )
         .setOption(
@@ -1078,23 +1745,12 @@ function crearDashboard() {
 
 
   /* =====================================================
-     GRÁFICO 2
-     DISTRIBUCIÓN POR NIVEL
+     GRÁFICO DE NIVELES
      ===================================================== */
-
-  /*
-   * Siempre habrá cuatro niveles:
-   * Avanzado
-   * Competente
-   * Básico
-   * Por fortalecer
-   *
-   * Aunque alguno tenga 0 participantes.
-   */
 
   const rangoNiveles =
     dashboard.getRange(
-      10,
+      filaNivelesInicio,
       4,
       5,
       2
@@ -1111,7 +1767,7 @@ function crearDashboard() {
         rangoNiveles
       )
       .setPosition(
-        28,
+        filaNivelesInicio + 18,
         7,
         0,
         0
@@ -1127,8 +1783,7 @@ function crearDashboard() {
       .setOption(
         "legend",
         {
-          position:
-            "right"
+          position: "right"
         }
       )
       .setOption(
@@ -1139,32 +1794,6 @@ function crearDashboard() {
         "width",
         600
       )
-      .setOption(
-        "slices",
-        {
-
-          0: {
-            color:
-              "#34A853"
-          },
-
-          1: {
-            color:
-              "#4285F4"
-          },
-
-          2: {
-            color:
-              "#FBBC04"
-          },
-
-          3: {
-            color:
-              "#EA4335"
-          }
-
-        }
-      )
       .build();
 
 
@@ -1174,11 +1803,80 @@ function crearDashboard() {
 
 
   /* =====================================================
-     INFORMACIÓN ADICIONAL
+     GRÁFICO DE BUENAS Y MALAS
      ===================================================== */
 
+  if (
+    filasCompetencias.length > 0
+  ) {
+
+    const rangoCompetencias =
+      dashboard.getRange(
+        filaCompetenciasInicio + 1,
+        1,
+        filasCompetencias.length + 1,
+        3
+      );
+
+
+    const graficoCompetencias =
+      dashboard
+        .newChart()
+        .setChartType(
+          Charts.ChartType.COLUMN
+        )
+        .addRange(
+          rangoCompetencias
+        )
+        .setPosition(
+          filaCompetenciasInicio,
+          7,
+          0,
+          0
+        )
+        .setOption(
+          "title",
+          "📊 Respuestas buenas y malas por competencia"
+        )
+        .setOption(
+          "legend",
+          {
+            position: "bottom"
+          }
+        )
+        .setOption(
+          "height",
+          400
+        )
+        .setOption(
+          "width",
+          700
+        )
+        .build();
+
+
+    dashboard.insertChart(
+      graficoCompetencias
+    );
+
+  }
+
+
+  /* =====================================================
+     INFORMACIÓN GENERAL
+     ===================================================== */
+
+  const filaInfo =
+    filaNivelesInicio + 14;
+
+
   dashboard
-    .getRange("A17:B21")
+    .getRange(
+      filaInfo,
+      1,
+      5,
+      2
+    )
     .setValues([
 
       [
@@ -1210,81 +1908,68 @@ function crearDashboard() {
 
 
   dashboard
-    .getRange("A17:B17")
-    .setFontWeight(
-      "bold"
+    .getRange(
+      filaInfo,
+      1
     )
-    .setBackground(
-      "#1F4E78"
-    )
-    .setFontColor(
-      "#FFFFFF"
-    );
+    .setFontWeight("bold")
+    .setBackground("#1F4E78")
+    .setFontColor("#FFFFFF");
 
 
   /* =====================================================
      FORMATO FINAL
      ===================================================== */
 
-  dashboard
-    .setColumnWidth(
-      1,
-      230
-    );
+  dashboard.setColumnWidth(
+    1,
+    230
+  );
 
+  dashboard.setColumnWidth(
+    2,
+    170
+  );
 
-  dashboard
-    .setColumnWidth(
-      2,
-      140
-    );
+  dashboard.setColumnWidth(
+    3,
+    230
+  );
 
+  dashboard.setColumnWidth(
+    4,
+    180
+  );
 
-  dashboard
-    .setColumnWidth(
-      3,
-      30
-    );
+  dashboard.setColumnWidth(
+    5,
+    130
+  );
 
+  dashboard.setColumnWidth(
+    6,
+    130
+  );
 
-  dashboard
-    .setColumnWidth(
-      4,
-      150
-    );
+  dashboard.setColumnWidth(
+    7,
+    110
+  );
 
+  dashboard.setColumnWidth(
+    8,
+    30
+  );
 
-  dashboard
-    .setColumnWidth(
-      5,
-      110
-    );
-
-
-  dashboard
-    .setColumnWidth(
-      6,
-      350
-    );
-
-
-  dashboard
-    .setColumnWidth(
-      7,
-      30
-    );
-
-
-  dashboard
-    .setColumnWidth(
-      8,
-      30
-    );
+  dashboard.setColumnWidth(
+    9,
+    30
+  );
 
 
   dashboard
     .getRange(
-      "A1:H40"
+      "A1:I100"
     )
     .setVerticalAlignment(
       "middle"
@@ -1293,7 +1978,7 @@ function crearDashboard() {
 
   dashboard
     .getRange(
-      "A1:H40"
+      "A1:I100"
     )
     .setWrap(
       true
@@ -1308,36 +1993,6 @@ function crearDashboard() {
 
   dashboard.setRowHeight(
     2,
-    30
-  );
-
-
-  dashboard.setRowHeight(
-    17,
-    30
-  );
-
-
-  dashboard.setRowHeight(
-    18,
-    30
-  );
-
-
-  dashboard.setRowHeight(
-    19,
-    30
-  );
-
-
-  dashboard.setRowHeight(
-    20,
-    30
-  );
-
-
-  dashboard.setRowHeight(
-    21,
     30
   );
 
@@ -1364,9 +2019,6 @@ function convertirPorcentaje(valor) {
   let numero;
 
 
-  /*
-   * Si ya es número.
-   */
   if (
     typeof valor === "number"
   ) {
@@ -1376,9 +2028,6 @@ function convertirPorcentaje(valor) {
 
   }
 
-  /*
-   * Si es texto.
-   */
   else {
 
     numero =
@@ -1401,12 +2050,6 @@ function convertirPorcentaje(valor) {
   }
 
 
-  /*
-   * Si viene como decimal:
-   *
-   * 0.85 → 85
-   * 0.72 → 72
-   */
   if (
     numero > 0 &&
     numero <= 1
@@ -1418,9 +2061,6 @@ function convertirPorcentaje(valor) {
   }
 
 
-  /*
-   * Mantenerlo dentro de 0-100.
-   */
   numero =
     Math.max(
       0,
@@ -1464,9 +2104,6 @@ function normalizarNivel(valor) {
       .trim();
 
 
-  /*
-   * Avanzado
-   */
   if (
     texto.includes(
       "avanz"
@@ -1478,9 +2115,6 @@ function normalizarNivel(valor) {
   }
 
 
-  /*
-   * Competente
-   */
   if (
     texto.includes(
       "compet"
@@ -1492,9 +2126,6 @@ function normalizarNivel(valor) {
   }
 
 
-  /*
-   * Básico
-   */
   if (
     texto.includes(
       "basic"
@@ -1506,9 +2137,6 @@ function normalizarNivel(valor) {
   }
 
 
-  /*
-   * Por fortalecer
-   */
   if (
     texto.includes(
       "fortal"
@@ -1532,7 +2160,9 @@ function normalizarNivel(valor) {
    CALCULAR NIVEL SEGÚN PORCENTAJE
    ===================================================== */
 
-function calcularNivel(porcentaje) {
+function calcularNivel(
+  porcentaje
+) {
 
   if (
     porcentaje >= 80
@@ -1564,6 +2194,8 @@ function calcularNivel(porcentaje) {
   return "Por fortalecer";
 
 }
+
+
 /* =====================================================
    MENÚ RETO DIGITAL
    ===================================================== */
@@ -1572,7 +2204,9 @@ function onOpen() {
 
   SpreadsheetApp
     .getUi()
-    .createMenu("📊 Reto Digital")
+    .createMenu(
+      "📊 Reto Digital"
+    )
     .addItem(
       "🔄 Actualizar resultados",
       "actualizarResultados"
@@ -1615,16 +2249,19 @@ function abrirDashboard() {
     SpreadsheetApp
       .getActiveSpreadsheet();
 
+
   const dashboard =
     ss.getSheetByName(
       DASHBOARD_NAME
     );
+
 
   if (!dashboard) {
 
     crearDashboard();
 
   }
+
 
   ss.setActiveSheet(
     ss.getSheetByName(
